@@ -198,6 +198,7 @@
     <div class="plist" id="pList"></div>
     <p class="mut" id="pEmpty" style="display:none">ยังไม่มีสินค้า แอดมินเพิ่มได้ในแท็บ Products</p>
   </div>
+  <button class="btn sec" id="btnHist" style="margin-bottom:14px">📝 ประวัติ / แก้ไข</button>
   <button class="btn sec" id="btnAdmin" style="display:none;margin-bottom:14px">📊 สรุป Yield สาขา (แอดมิน)</button>
   <div class="card" id="todayCard" style="display:none">
     <label>บันทึกวันนี้ (นับจากเครื่องนี้)</label>
@@ -281,6 +282,45 @@
   </div>
 </section>
 
+<!-- HISTORY -->
+<section class="screen" id="sHist">
+  <div class="card">
+    <div class="row">
+      <div class="field" style="margin:0"><label>ย้อนหลัง</label>
+        <select id="histDays"><option value="1">วันนี้</option><option value="3">3 วัน</option><option value="7" selected>7 วัน</option><option value="30">30 วัน</option></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <label id="histLbl">แตะรายการที่ต้องการแก้ไข</label>
+    <div id="histList"></div>
+  </div>
+</section>
+
+<!-- EDIT -->
+<section class="screen" id="sEdit">
+  <div class="card">
+    <p class="mut" id="editInfo" style="margin-top:0"></p>
+    <img id="editPrev" alt="" style="width:100%;border-radius:12px;display:block">
+    <label style="margin-top:12px">เปลี่ยนรูป (ถ้าต้องการ)</label>
+    <div id="editPhotos" style="display:grid;gap:8px"></div>
+    <input type="file" id="fEdit" accept="image/*">
+  </div>
+  <div class="card">
+    <div class="field"><label>ชื่อพนักงาน</label><input id="eName"></div>
+    <div class="unit" id="eUnit"><button data-u="kg">กิโลกรัม (kg)</button><button data-u="g">กรัม (g)</button></div>
+    <div class="field"><label id="leBefore"></label><input id="eBefore" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    <div class="field"><label id="leWaste"></label><input id="eWaste" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    <div class="field"><label id="leAfter"></label><input id="eAfter" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    <div class="res">
+      <div class="big"><span>Yield</span><b id="erYield">-</b></div>
+      <div><span class="mut">เศษ</span><b id="erWaste">-</b></div>
+      <div><span class="mut">Loss</span><b id="erLoss">-</b></div>
+    </div>
+    <p class="warn" id="eWarn"></p>
+  </div>
+  <button class="btn" id="btnEditSave">💾 บันทึกการแก้ไข</button>
+</section>
+
 <!-- DONE -->
 <section class="screen" id="sDone">
   <div class="card">
@@ -312,8 +352,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.3.0';
 const CHANGELOG = {
+  '1.3.0': ['แก้ไขรายการย้อนหลังได้ที่ปุ่ม "ประวัติ / แก้ไข" ทั้งน้ำหนัก ชื่อพนักงาน และรูป', 'กดบันทึกแล้ว ข้อมูลใน Sheet กับรูปคอลลาจใน Drive จะอัปเดตทับของเดิม'],
   '1.2.1': ['หน้าสรุปแยกตามสินค้า ทั้งในแอป รูปที่แชร์ และข้อความ', 'นับจำนวนเป็นฟิลเลย์ (ฟิลเลย์ที่ 1, 2, 3)', 'Drive เก็บเฉพาะรูปคอลลาจ แยกโฟลเดอร์ตามสาขา สินค้า และวันที่', 'ปรับข้อความในแอปให้อ่านง่ายขึ้น'],
   '1.2.0': ['เซฟรูปคอลลาจลงเครื่องได้หลังบันทึก', 'แอดมินดูสรุป Yield ของแต่ละสาขาย้อนหลังได้', 'แชร์รูปสรุปหรือคัดลอกข้อความส่งให้สาขาทาง LINE ได้'],
   '1.1.0': ['บันทึกเสร็จแล้วกดถ่ายฟิลเลย์ถัดไปได้เลย', 'หน้าหลักบอกจำนวนที่บันทึกวันนี้', 'Drive แยกโฟลเดอร์ตามสาขาและวันที่', 'แอปแสดงเลขเวอร์ชัน และแจ้งเมื่อมีอัปเดต'],
@@ -542,6 +583,22 @@ function drawCover(c, src, x, y, w, h) {
   const sw = w / r, sh = h / r;
   c.drawImage(src, (src.width - sw) / 2, (src.height - sh) / 2, sw, sh, x, y, w, h);
 }
+/** แถบข้อมูลด้านล่างคอลลาจ */
+function drawInfo(c, y0, W, INFO, d) {
+  const v = d.v, ok = v.before > 0, loss = v.before - v.after - v.waste, F = '-apple-system,"Noto Sans Thai",sans-serif';
+  c.fillStyle = '#1f6f5c'; c.fillRect(0, y0, W, INFO);
+  c.fillStyle = '#fff'; c.textBaseline = 'top'; c.textAlign = 'left';
+  c.font = `bold 40px ${F}`; c.fillText(`${d.product}${d.piece ? '  #' + d.piece : ''}`, 30, y0 + 22, 760);
+  c.font = `26px ${F}`;
+  c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 780);
+  c.fillText(`${d.labels[0]} ${f2(v.before)}  |  ${d.labels[1]} ${f2(v.waste)}  |  ${d.labels[2]} ${f2(v.after)} ${d.unit}`, 30, y0 + 125, 780);
+  c.fillText(`เศษ ${ok ? f2(v.waste / v.before * 100) : '-'}%   Loss ${f2(loss)} ${d.unit} (${ok ? f2(loss / v.before * 100) : '-'}%)`, 30, y0 + 170, 780);
+  c.textAlign = 'right';
+  c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
+  c.font = `bold 80px ${F}`; c.fillStyle = '#ffd54a';
+  c.fillText(ok ? f2(v.after / v.before * 100) + '%' : '-', W - 30, y0 + 75);
+  c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+}
 function buildCollage() {
   const W = 1200, TOP = 675, SQ = 600, GAP = 6, INFO = 230;
   const H = TOP + GAP + SQ + INFO;
@@ -554,21 +611,8 @@ function buildCollage() {
     if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + (p.src === 'gallery' ? ' (แกลเลอรี)' : '')); }
     else { c.fillStyle = '#ddd'; c.fillRect(x, y, w, h); }
   });
-  const v = vals(), ok = v.before > 0, loss = v.before - v.after - v.waste;
-  const y0 = TOP + GAP + SQ;
-  c.fillStyle = '#1f6f5c'; c.fillRect(0, y0, W, INFO);
-  c.fillStyle = '#fff'; c.textBaseline = 'top';
-  const F = '-apple-system,"Noto Sans Thai",sans-serif';
-  c.font = `bold 40px ${F}`; c.fillText(`${S.product}  #${S.piece}`, 30, y0 + 22, 760);
-  c.font = `26px ${F}`;
-  c.fillText(`สาขา ${S.branch}  •  ${S.employee}  •  ${fmtDT(new Date())}`, 30, y0 + 80, 780);
-  c.fillText(`${S.steps[0].label} ${f2(v.before)}  |  ${S.steps[1].label} ${f2(v.waste)}  |  ${S.steps[2].label} ${f2(v.after)} ${unit}`, 30, y0 + 125, 780);
-  c.fillText(`เศษ ${ok ? f2(v.waste / v.before * 100) : '-'}%   Loss ${f2(loss)} ${unit} (${ok ? f2(loss / v.before * 100) : '-'}%)`, 30, y0 + 170, 780);
-  c.textAlign = 'right';
-  c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
-  c.font = `bold 80px ${F}`; c.fillStyle = '#ffd54a';
-  c.fillText(ok ? f2(v.after / v.before * 100) + '%' : '-', W - 30, y0 + 75);
-  c.textAlign = 'left';
+  drawInfo(c, TOP + GAP + SQ, W, INFO, { product: S.product, piece: S.piece, branch: S.branch, employee: S.employee,
+    when: fmtDT(new Date()), labels: S.steps.slice(0, 3).map(x => x.label), v: vals(), unit });
   return cv;
 }
 
@@ -775,6 +819,115 @@ function summaryImage() {
   draw(cv.getContext('2d'), H);
   return cv.toDataURL('image/jpeg', 0.9);
 }
+
+/* ---------- ประวัติ / แก้ไข ---------- */
+let E = null;
+const CL = { W: 1200, TOP: 675, SQ: 600, GAP: 6, INFO: 230 };
+const slotRects = () => [[0, 0, CL.W, CL.TOP], [0, CL.TOP + CL.GAP, CL.SQ - CL.GAP / 2, CL.SQ], [CL.SQ + CL.GAP / 2, CL.TOP + CL.GAP, CL.SQ - CL.GAP / 2, CL.SQ]];
+const backToHist = () => goHist();
+$('btnHist').onclick = () => goHist();
+$('histDays').onchange = () => loadHist();
+function goHist() {
+  show('sHist', `ประวัติ ${$('inBranch').value}`, { text: '← กลับ', fn: goHome });
+  loadHist();
+}
+async function loadHist() {
+  $('histList').innerHTML = '<p class="mut">กำลังโหลด...</p>';
+  try {
+    const res = await api({ action: 'list', code: localStorage.getItem(LS.code), branch: $('inBranch').value, days: $('histDays').value });
+    if (!res.ok) { $('histList').innerHTML = `<p class="warn">${esc(res.error)}</p>`; return; }
+    E = { list: res.rows.slice().reverse() };
+    if (!E.list.length) { $('histList').innerHTML = '<p class="mut">ยังไม่มีรายการในช่วงนี้</p>'; return; }
+    $('histList').innerHTML = E.list.map((r, i) => `<a class="rec" href="#" data-i="${i}">
+      <img loading="lazy" src="${r.fileId ? `https://drive.google.com/thumbnail?id=${r.fileId}&sz=w200` : ''}" alt="">
+      <div class="info"><b>${prodIcon(r.product)} ${esc(r.product)}</b>${r.piece ? ' • ฟิลเลย์ที่ ' + r.piece : ''}<br>
+      <span class="mut">${thDate(r.date)} ${r.time} • ${esc(r.employee)}</span><br>
+      <span class="mut">${f2(r.before)} → ${f2(r.after)} ${esc(r.unit)}</span>${r.edited ? `<span class="badge">แก้ไขแล้ว ${r.edited}</span>` : ''}</div>
+      <div class="y">${f2(r.yieldPct)}%</div></a>`).join('');
+  } catch (e) { $('histList').innerHTML = `<p class="warn">เชื่อมต่อไม่ได้: ${esc(e.message)}</p>`; }
+}
+$('histList').onclick = e => {
+  const a = e.target.closest('[data-i]'); if (!a) return;
+  e.preventDefault(); openEdit(E.list[+a.dataset.i]);
+};
+async function openEdit(rec) {
+  busy(true, 'กำลังโหลดรูป...');
+  try {
+    const res = await api({ action: 'image', code: localStorage.getItem(LS.code), id: rec.id });
+    if (!res.ok) throw new Error(res.error);
+    const base = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('เปิดรูปเดิมไม่ได้')); im.src = res.data; });
+    const p = cfg.products.find(x => x.name === rec.product);
+    E.rec = rec; E.base = base; E.photos = [null, null, null]; E.unit = rec.unit === 'g' ? 'g' : 'kg';
+    E.labels = p ? p.steps : ['ก่อนตัดแต่ง', 'เศษตัดแต่ง', 'ตัดแต่งแล้ว'];
+    $('eName').value = rec.employee;
+    $('eBefore').value = rec.before; $('eWaste').value = rec.waste; $('eAfter').value = rec.after;
+    $('editInfo').textContent = `${rec.product}${rec.piece ? ' • ฟิลเลย์ที่ ' + rec.piece : ''} • ${thDate(rec.date)} ${rec.time}`;
+    $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}" style="padding:11px">📷 ${esc(l)}</button>`).join('');
+    busy(false);
+    setEUnit(); calcEdit();
+    show('sEdit', 'แก้ไขรายการ', { text: '← กลับ', fn: backToHist });
+  } catch (e) { busy(false); alert('เปิดรายการไม่ได้: ' + e.message); }
+}
+function setEUnit() {
+  document.querySelectorAll('#eUnit button').forEach(b => b.classList.toggle('on', b.dataset.u === E.unit));
+  $('leBefore').textContent = `น้ำหนัก${E.labels[0]} (${E.unit})`;
+  $('leWaste').textContent = `น้ำหนัก${E.labels[1]} (${E.unit})`;
+  $('leAfter').textContent = `น้ำหนัก${E.labels[2]} (${E.unit})`;
+}
+document.querySelectorAll('#eUnit button').forEach(b => b.onclick = () => { E.unit = b.dataset.u; setEUnit(); calcEdit(); });
+['eBefore', 'eWaste', 'eAfter', 'eName'].forEach(id => $(id).oninput = calcEdit);
+function evals() {
+  const r = v => Math.round((parseFloat(v) || 0) * 100) / 100;
+  return { before: r($('eBefore').value), waste: r($('eWaste').value), after: r($('eAfter').value) };
+}
+let editTimer;
+function calcEdit() {
+  const v = evals(), ok = v.before > 0, loss = v.before - v.after - v.waste;
+  $('erYield').textContent = ok ? f2(v.after / v.before * 100) + '%' : '-';
+  $('erWaste').textContent = ok ? f2(v.waste / v.before * 100) + '%' : '-';
+  $('erLoss').textContent = ok ? `${f2(loss)} ${E.unit} (${f2(loss / v.before * 100)}%)` : '-';
+  $('eWarn').textContent = ok && loss < -0.0001 ? '⚠️ หลังตัดแต่งรวมกับเศษแล้วหนักกว่าก่อนตัดแต่ง ลองเช็กน้ำหนักอีกครั้ง' : '';
+  $('btnEditSave').disabled = !(ok && v.after > 0 && $('eName').value.trim());
+  clearTimeout(editTimer);
+  editTimer = setTimeout(() => { $('editPrev').src = buildEditCollage().toDataURL('image/jpeg', 0.7); }, 250);
+}
+function buildEditCollage() {
+  const H = CL.TOP + CL.GAP + CL.SQ + CL.INFO;
+  const cv = document.createElement('canvas'); cv.width = CL.W; cv.height = H;
+  const c = cv.getContext('2d');
+  c.drawImage(E.base, 0, 0, CL.W, H);
+  slotRects().forEach(([x, y, w, h], i) => {
+    const p = E.photos[i];
+    if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + (p.src === 'gallery' ? ' (แกลเลอรี)' : '')); }
+  });
+  drawInfo(c, CL.TOP + CL.GAP + CL.SQ, CL.W, CL.INFO, { product: E.rec.product, piece: E.rec.piece, branch: E.rec.branch,
+    employee: $('eName').value.trim(), when: `${thDate(E.rec.date)} ${E.rec.time} (แก้ไข ${fmtDT(new Date()).slice(0, 16)})`,
+    labels: E.labels, v: evals(), unit: E.unit });
+  return cv;
+}
+$('editPhotos').onclick = e => { const b = e.target.closest('[data-slot]'); if (!b) return; $('fEdit').dataset.slot = b.dataset.slot; $('fEdit').click(); };
+$('fEdit').onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  const i = +$('fEdit').dataset.slot;
+  busy(true, 'กำลังประมวลผลรูป...');
+  try { E.photos[i] = await processPhoto(file, E.labels[i], 'gallery'); calcEdit(); }
+  catch (err) { alert('อ่านรูปไม่ได้: ' + err.message); }
+  busy(false);
+};
+$('btnEditSave').onclick = async () => {
+  if (!confirm('บันทึกทับข้อมูลเดิมใน Sheet และรูปใน Drive?')) return;
+  busy(true, 'กำลังบันทึก...');
+  try {
+    const body = { action: 'update', code: localStorage.getItem(LS.code), id: E.rec.id, employee: $('eName').value.trim(),
+      unit: E.unit, ...evals(), collage: buildEditCollage().toDataURL('image/jpeg', 0.85), appVersion: APP_VERSION };
+    const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+    const res = await r.json();
+    busy(false);
+    if (!res.ok) { alert('บันทึกไม่สำเร็จ: ' + res.error); return; }
+    alert(`อัปเดตแล้ว Yield ใหม่ ${f2(res.yieldPct)}%`);
+    goHist();
+  } catch (e) { busy(false); alert('ส่งข้อมูลไม่สำเร็จ ลองเช็กอินเทอร์เน็ตแล้วกดบันทึกอีกครั้ง\n' + e.message); }
+};
 
 /* ---------- version ---------- */
 function checkVersion() {
