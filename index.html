@@ -86,6 +86,14 @@
   @keyframes s{to{transform:rotate(360deg)}}
   .ok{font-size:60px;text-align:center}
   input[type=file]{display:none}
+  .ver{text-align:center;color:var(--mut);font-size:12px;margin:6px 0 0;opacity:.85}
+  .badge{display:inline-block;margin-top:5px;font-size:12px;font-weight:600;color:#b4451f;background:rgba(255,163,107,.3);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:2px 9px}
+  .today{display:flex;flex-wrap:wrap;gap:8px}
+  .today span{background:rgba(255,255,255,.45);border:1px solid var(--gb);border-radius:12px;padding:6px 10px;font-size:14px}
+  .modal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,40,35,.3);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .modal.on{display:flex}
+  .modal .card{max-width:420px;width:100%;background:rgba(255,255,255,.72)}
+  .modal ul{margin:8px 0 16px;padding-left:20px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -160,6 +168,7 @@
     <button class="btn" id="btnLogin">เข้าสู่ระบบ</button>
     <p class="warn" id="loginErr"></p>
   </div>
+  <p class="ver vtxt"></p>
 </section>
 
 <!-- HOME -->
@@ -174,6 +183,11 @@
     <div class="plist" id="pList"></div>
     <p class="mut" id="pEmpty" style="display:none">ยังไม่มีสินค้า ให้แอดมินเพิ่มในแท็บ Products</p>
   </div>
+  <div class="card" id="todayCard" style="display:none">
+    <label>วันนี้บันทึกแล้ว (เครื่องนี้)</label>
+    <div class="today" id="todayList"></div>
+  </div>
+  <p class="ver vtxt"></p>
 </section>
 
 <!-- CAPTURE -->
@@ -231,10 +245,17 @@
       <div><span class="mut">Loss</span><b id="dLoss"></b></div>
     </div>
   </div>
-  <button class="btn" id="btnNew">+ บันทึกรายการใหม่</button>
+  <button class="btn" id="btnPiece">+ ถ่ายตัวถัดไป</button>
+  <button class="btn sec" id="btnNew" style="margin-top:10px">🏠 กลับหน้าหลัก / เลือกสินค้าอื่น</button>
 </section>
 
 </main>
+<div class="modal" id="verModal"><div class="card">
+  <p class="stepttl">🎉 อัปเดตแล้ว</p>
+  <p class="mut" id="verTitle"></p>
+  <ul id="verList"></ul>
+  <button class="btn" id="verOk">ตกลง</button>
+</div></div>
 <div class="overlay" id="ovl"><div class="spin"></div><div id="ovlTxt">กำลังบันทึก...</div></div>
 
 <script>
@@ -242,8 +263,13 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
+const APP_VERSION = '1.1.0';
+const CHANGELOG = {
+  '1.1.0': ['ถ่ายตัวถัดไปของสินค้าเดิมได้ทันทีหลังบันทึก (นับ ตัวที่ 1, 2, 3 …)', 'หน้าหลักแสดงจำนวนที่บันทึกวันนี้', 'รูปใน Drive แยกโฟลเดอร์ตามสาขาและวันที่', 'แสดงเลขเวอร์ชันและแจ้งเตือนเมื่ออัปเดต'],
+  '1.0.0': ['เวอร์ชันแรก']
+};
 const $ = id => document.getElementById(id);
-const LS = { code: 'yr_code', cfg: 'yr_cfg', name: 'yr_name', branch: 'yr_branch', unit: 'yr_unit' };
+const LS = { ver: 'yr_ver', count: 'yr_count', code: 'yr_code', cfg: 'yr_cfg', name: 'yr_name', branch: 'yr_branch', unit: 'yr_unit' };
 let cfg = null;
 let S = null; // บันทึกที่กำลังทำ
 const ROLES = ['before', 'waste', 'after'];
@@ -290,6 +316,24 @@ function logout(msg) {
 }
 $('btnLogin').onclick = () => { const c = $('inCode').value.trim(); if (c) { $('loginErr').textContent = 'กำลังตรวจสอบ...'; login(c); } };
 
+/* ---------- นับจำนวนต่อวัน ---------- */
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+function getCounts() {
+  try { const c = JSON.parse(localStorage.getItem(LS.count) || '{}'); return c.date === todayKey() ? c : { date: todayKey(), n: {} }; }
+  catch (_) { return { date: todayKey(), n: {} }; }
+}
+const countOf = (branch, product) => getCounts().n[branch + '|' + product] || 0;
+function addCount(branch, product) {
+  const c = getCounts(), k = branch + '|' + product; c.n[k] = (c.n[k] || 0) + 1;
+  localStorage.setItem(LS.count, JSON.stringify(c));
+}
+function renderToday() {
+  const br = $('inBranch').value, n = getCounts().n;
+  const items = Object.entries(n).filter(([k]) => k.startsWith(br + '|'));
+  $('todayCard').style.display = items.length ? '' : 'none';
+  $('todayList').innerHTML = items.map(([k, v]) => `<span>${prodIcon(k.split('|')[1])} ${esc(k.split('|')[1])} <b>${v}</b> ตัว</span>`).join('');
+}
+
 /* ---------- home ---------- */
 function goHome() { renderHome(); show('sHome', 'Yield Record', { text: 'ออก', fn: () => logout() }); }
 function renderHome() {
@@ -297,13 +341,17 @@ function renderHome() {
   const sel = $('inBranch'), saved = localStorage.getItem(LS.branch);
   sel.innerHTML = cfg.branches.map(b => `<option${b === saved ? ' selected' : ''}>${b}</option>`).join('');
   renderProducts();
+  renderToday();
 }
 function renderProducts() {
   const q = $('inSearch').value.trim().toLowerCase();
   const list = cfg.products.filter(p => p.name.toLowerCase().includes(q));
   $('pEmpty').style.display = cfg.products.length ? 'none' : '';
-  $('pList').innerHTML = list.map((p, i) =>
-    `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${prodIcon(p.name)}</span><span>${esc(p.name)}<small>${[...p.steps, ...p.extras].map(esc).join(' › ')}</small></span></button>`).join('');
+  const br = $('inBranch').value;
+  $('pList').innerHTML = list.map(p => {
+    const n = countOf(br, p.name);
+    return `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${prodIcon(p.name)}</span><span>${esc(p.name)}<small>${[...p.steps, ...p.extras].map(esc).join(' › ')}</small>${n ? `<span class="badge">วันนี้ ${n} ตัว</span>` : ''}</span></button>`;
+  }).join('');
 }
 const ICONS = [[/แซลมอน|salmon/i,'🍣'],[/ปลา|fish|ทูน่า|tuna|ซาบะ/i,'🐟'],[/กุ้ง|shrimp|prawn/i,'🦐'],[/ปู|crab/i,'🦀'],[/หมึก|squid|octopus/i,'🦑'],[/หอย|shell|oyster/i,'🦪'],
   [/ไก่|chicken/i,'🍗'],[/หมู|pork|เบคอน|bacon/i,'🥓'],[/เนื้อ|วัว|beef|wagyu|สเต๊ก|steak/i,'🥩'],[/เป็ด|duck/i,'🦆'],
@@ -312,7 +360,7 @@ function prodIcon(n) { for (const [re, ic] of ICONS) if (re.test(n)) return ic; 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 $('inSearch').oninput = renderProducts;
 $('inName').onchange = () => localStorage.setItem(LS.name, $('inName').value.trim());
-$('inBranch').onchange = () => localStorage.setItem(LS.branch, $('inBranch').value);
+$('inBranch').onchange = () => { localStorage.setItem(LS.branch, $('inBranch').value); renderProducts(); renderToday(); };
 $('pList').onclick = e => {
   const b = e.target.closest('.pbtn'); if (!b) return;
   const name = $('inName').value.trim();
@@ -324,12 +372,13 @@ $('pList').onclick = e => {
 /* ---------- capture ---------- */
 function startRecord(p) {
   S = {
+    prod: p, piece: countOf($('inBranch').value, p.name) + 1,
     product: p.name, employee: $('inName').value.trim(), branch: $('inBranch').value,
     steps: [...p.steps.map((l, i) => ({ label: l, role: ROLES[i] })), ...p.extras.map(l => ({ label: l, role: 'extra' }))],
     photos: [], idx: 0
   };
   renderCap();
-  show('sCap', p.name, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
+  show('sCap', `${p.name} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
 }
 function renderCap() {
   const st = S.steps[S.idx], ph = S.photos[S.idx];
@@ -414,10 +463,10 @@ function setUnit() {
 }
 function goWeight() {
   setUnit(); calc();
-  show('sW', S.product, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
+  show('sW', `${S.product} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
 }
 ['wBefore', 'wWaste', 'wAfter'].forEach(id => $(id).oninput = calc);
-$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', S.product, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } }); };
+$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', `${S.product} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } }); };
 let collageTimer;
 function vals() {
   const r = v => Math.round((parseFloat(v) || 0) * 100) / 100;
@@ -458,7 +507,7 @@ function buildCollage() {
   c.fillStyle = '#1f6f5c'; c.fillRect(0, y0, W, INFO);
   c.fillStyle = '#fff'; c.textBaseline = 'top';
   const F = '-apple-system,"Noto Sans Thai",sans-serif';
-  c.font = `bold 40px ${F}`; c.fillText(S.product, 30, y0 + 22, 760);
+  c.font = `bold 40px ${F}`; c.fillText(`${S.product}  #${S.piece}`, 30, y0 + 22, 760);
   c.font = `26px ${F}`;
   c.fillText(`สาขา ${S.branch}  •  ${S.employee}  •  ${fmtDT(new Date())}`, 30, y0 + 80, 780);
   c.fillText(`${S.steps[0].label} ${f2(v.before)}  |  ${S.steps[1].label} ${f2(v.waste)}  |  ${S.steps[2].label} ${f2(v.after)} ${unit}`, 30, y0 + 125, 780);
@@ -480,7 +529,7 @@ $('btnSave').onclick = async () => {
       .map(x => ({ label: x.s.label, data: x.p.stamped }));
     const body = {
       action: 'save', code: localStorage.getItem(LS.code),
-      branch: S.branch, employee: S.employee, product: S.product, unit, ...v,
+      branch: S.branch, employee: S.employee, product: S.product, piece: S.piece, appVersion: APP_VERSION, unit, ...v,
       collage: buildCollage().toDataURL('image/jpeg', 0.85), extras,
       photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${S.photos[i].src === 'gallery' ? ' (แกลเลอรี)' : ''}` : null).filter(Boolean)
     };
@@ -488,7 +537,9 @@ $('btnSave').onclick = async () => {
     const res = await r.json();
     busy(false);
     if (!res.ok) { alert('บันทึกไม่สำเร็จ: ' + res.error); return; }
-    $('doneInfo').textContent = `${S.product} • ${S.branch} • ${res.id}`;
+    addCount(S.branch, S.product);
+    $('doneInfo').textContent = `${S.product} ตัวที่ ${S.piece} • ${S.branch} • ${res.id}`;
+    $('btnPiece').textContent = `+ ถ่ายตัวถัดไป: ${S.product} (ตัวที่ ${S.piece + 1})`;
     $('dYield').textContent = f2(res.yieldPct) + '%';
     $('dWaste').textContent = f2(res.wastePct) + '%';
     $('dLoss').textContent = f2(res.lossPct) + '%';
@@ -500,9 +551,21 @@ $('btnSave').onclick = async () => {
   }
 };
 $('btnNew').onclick = goHome;
+$('btnPiece').onclick = () => startRecord(S.prod);
+
+/* ---------- version ---------- */
+function checkVersion() {
+  document.querySelectorAll('.vtxt').forEach(e => e.textContent = 'Yield Record เวอร์ชัน ' + APP_VERSION);
+  if (localStorage.getItem(LS.ver) === APP_VERSION) return;
+  $('verTitle').textContent = `เวอร์ชัน ${APP_VERSION}` + (localStorage.getItem(LS.ver) ? ` (จากเดิม ${localStorage.getItem(LS.ver)})` : '');
+  $('verList').innerHTML = (CHANGELOG[APP_VERSION] || []).map(t => `<li>${esc(t)}</li>`).join('');
+  $('verModal').classList.add('on');
+}
+$('verOk').onclick = () => { localStorage.setItem(LS.ver, APP_VERSION); $('verModal').classList.remove('on'); };
 
 /* ---------- init ---------- */
 (function init() {
+  checkVersion();
   const code = localStorage.getItem(LS.code), c = localStorage.getItem(LS.cfg);
   if (code && c) { cfg = JSON.parse(c); goHome(); login(code, true); } // ใช้ข้อมูลเดิมก่อน แล้วรีเฟรชรายการสินค้าเบื้องหลัง
   else show('sLogin');
