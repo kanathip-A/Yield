@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2fb39a"/>
+      <stop offset="1" stop-color="#15584a"/>
+    </linearGradient>
+    <linearGradient id="fil" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffa36b"/>
+      <stop offset="1" stop-color="#f26a3d"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".15"/>
+    </linearGradient>
+    <clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="400" cy="110" r="120" fill="#ffd54a" opacity=".35"/>
+  <circle cx="90" cy="430" r="140" fill="#ff8a5c" opacity=".3"/>
+  <!-- salmon fillet -->
+  <g transform="translate(256 236) rotate(-18)">
+    <path d="M-150 -40 C-90 -110 80 -120 160 -50 C175 -20 165 20 140 40 C60 105 -90 95 -150 40 C-170 15 -170 -15 -150 -40Z" fill="url(#fil)"/>
+    <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".85">
+      <path d="M-105 -55 C-85 -20 -85 25 -110 60"/>
+      <path d="M-55 -78 C-30 -30 -30 30 -60 80"/>
+      <path d="M0 -85 C25 -35 25 35 -5 88"/>
+      <path d="M55 -80 C80 -35 80 30 50 80"/>
+      <path d="M108 -62 C128 -30 128 20 103 58"/>
+    </g>
+  </g>
+  <!-- glass card with percent -->
+  <rect x="236" y="300" width="210" height="140" rx="34" fill="url(#glass)" stroke="#fff" stroke-opacity=".7" stroke-width="4"/>
+  <text x="341" y="398" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="84" fill="#fff">%</text>
+  <!-- camera badge -->
+  <g transform="translate(70 312)">
+    <rect width="140" height="104" rx="26" fill="url(#glass)" stroke="#fff" stroke-opacity=".7" stroke-width="4"/>
+    <rect x="34" y="-14" width="44" height="22" rx="8" fill="#fff" opacity=".8"/>
+    <circle cx="70" cy="54" r="30" fill="none" stroke="#fff" stroke-width="9"/>
+    <circle cx="70" cy="54" r="11" fill="#fff"/>
+  </g>
+  </g>
+</svg>
