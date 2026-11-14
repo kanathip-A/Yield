@@ -178,7 +178,7 @@
   <div class="card">
     <div class="hero"><img src="icon.svg" alt=""><h2>Yield Record</h2><p class="mut">บันทึกรูปและน้ำหนักการตัดแต่งวัตถุดิบ</p></div>
     <p class="stepttl">เข้าสู่ระบบ</p>
-    <p class="mut">กรอกรหัสที่ได้รับจากแอดมิน (ใส่ครั้งเดียว เครื่องจะจำไว้)</p>
+    <p class="mut">ใส่รหัสที่ได้จากแอดมิน ใส่ครั้งเดียว เครื่องจะจำไว้</p>
     <div class="field"><input id="inCode" placeholder="รหัสผู้ใช้" autocapitalize="characters" autocomplete="off"></div>
     <button class="btn" id="btnLogin">เข้าสู่ระบบ</button>
     <p class="warn" id="loginErr"></p>
@@ -196,11 +196,11 @@
     <label>1. เลือกรายการสินค้า</label>
     <div class="field"><input id="inSearch" placeholder="ค้นหา..."></div>
     <div class="plist" id="pList"></div>
-    <p class="mut" id="pEmpty" style="display:none">ยังไม่มีสินค้า ให้แอดมินเพิ่มในแท็บ Products</p>
+    <p class="mut" id="pEmpty" style="display:none">ยังไม่มีสินค้า แอดมินเพิ่มได้ในแท็บ Products</p>
   </div>
   <button class="btn sec" id="btnAdmin" style="display:none;margin-bottom:14px">📊 สรุป Yield สาขา (แอดมิน)</button>
   <div class="card" id="todayCard" style="display:none">
-    <label>วันนี้บันทึกแล้ว (เครื่องนี้)</label>
+    <label>บันทึกวันนี้ (นับจากเครื่องนี้)</label>
     <div class="today" id="todayList"></div>
   </div>
   <p class="ver vtxt"></p>
@@ -245,7 +245,7 @@
     <label>ตัวอย่างรูปที่จะบันทึก</label>
     <img id="collagePrev" alt="">
   </div>
-  <button class="btn" id="btnSave">💾 บันทึกส่งขึ้น Drive</button>
+  <button class="btn" id="btnSave">💾 บันทึก</button>
   <button class="btn ghost" id="btnBackCap" style="margin-top:6px">← กลับไปแก้รูป</button>
 </section>
 
@@ -268,14 +268,10 @@
     <button class="btn" id="btnSumGo">🔍 ดูสรุป</button>
   </div>
   <div id="sumOut" style="display:none">
+    <p class="mut" id="sumTitle" style="margin:0 4px 10px;font-weight:600"></p>
+    <div id="sumCards"></div>
     <div class="card">
-      <p class="mut" id="sumTitle" style="margin-top:0"></p>
-      <div class="kpi" id="sumKpi"></div>
-      <label id="sumGrpLbl"></label>
-      <table class="t" id="sumGrp"></table>
-    </div>
-    <div class="card">
-      <label>รายการทั้งหมด (แตะเพื่อดูรูป) — Loss เกิน 5% แสดงสีแดง</label>
+      <label>รายการทั้งหมด แตะเพื่อดูรูป (Loss เกิน 5% เป็นสีแดง)</label>
       <div id="sumList"></div>
     </div>
     <div class="row">
@@ -298,8 +294,8 @@
     </div>
   </div>
   <button class="btn sec" id="btnSaveImg" style="margin-bottom:10px">💾 เซฟรูปลงเครื่อง</button>
-  <button class="btn" id="btnPiece">+ ถ่ายตัวถัดไป</button>
-  <button class="btn sec" id="btnNew" style="margin-top:10px">🏠 กลับหน้าหลัก / เลือกสินค้าอื่น</button>
+  <button class="btn" id="btnPiece">+ ถ่ายฟิลเลย์ถัดไป</button>
+  <button class="btn sec" id="btnNew" style="margin-top:10px">🏠 กลับหน้าหลัก</button>
 </section>
 
 </main>
@@ -316,10 +312,11 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const CHANGELOG = {
-  '1.2.0': ['ปุ่มเซฟรูปคอลลาจลงเครื่องหลังบันทึก', 'แอดมิน: ปุ่มสรุป Yield ของแต่ละสาขา ดูย้อนหลังได้ตามช่วงวัน', 'แอดมิน: แชร์รูปสรุปหรือคัดลอกข้อความส่งให้สาขาทาง LINE ได้'],
-  '1.1.0': ['ถ่ายตัวถัดไปของสินค้าเดิมได้ทันทีหลังบันทึก (นับ ตัวที่ 1, 2, 3 …)', 'หน้าหลักแสดงจำนวนที่บันทึกวันนี้', 'รูปใน Drive แยกโฟลเดอร์ตามสาขาและวันที่', 'แสดงเลขเวอร์ชันและแจ้งเตือนเมื่ออัปเดต'],
+  '1.2.1': ['หน้าสรุปแยกตามสินค้า ทั้งในแอป รูปที่แชร์ และข้อความ', 'นับจำนวนเป็นฟิลเลย์ (ฟิลเลย์ที่ 1, 2, 3)', 'Drive เก็บเฉพาะรูปคอลลาจ แยกโฟลเดอร์ตามสาขา สินค้า และวันที่', 'ปรับข้อความในแอปให้อ่านง่ายขึ้น'],
+  '1.2.0': ['เซฟรูปคอลลาจลงเครื่องได้หลังบันทึก', 'แอดมินดูสรุป Yield ของแต่ละสาขาย้อนหลังได้', 'แชร์รูปสรุปหรือคัดลอกข้อความส่งให้สาขาทาง LINE ได้'],
+  '1.1.0': ['บันทึกเสร็จแล้วกดถ่ายฟิลเลย์ถัดไปได้เลย', 'หน้าหลักบอกจำนวนที่บันทึกวันนี้', 'Drive แยกโฟลเดอร์ตามสาขาและวันที่', 'แอปแสดงเลขเวอร์ชัน และแจ้งเมื่อมีอัปเดต'],
   '1.0.0': ['เวอร์ชันแรก']
 };
 const $ = id => document.getElementById(id);
@@ -385,7 +382,7 @@ function renderToday() {
   const br = $('inBranch').value, n = getCounts().n;
   const items = Object.entries(n).filter(([k]) => k.startsWith(br + '|'));
   $('todayCard').style.display = items.length ? '' : 'none';
-  $('todayList').innerHTML = items.map(([k, v]) => `<span>${prodIcon(k.split('|')[1])} ${esc(k.split('|')[1])} <b>${v}</b> ตัว</span>`).join('');
+  $('todayList').innerHTML = items.map(([k, v]) => `<span>${prodIcon(k.split('|')[1])} ${esc(k.split('|')[1])} <b>${v}</b> ฟิลเลย์</span>`).join('');
 }
 
 /* ---------- home ---------- */
@@ -405,7 +402,7 @@ function renderProducts() {
   const br = $('inBranch').value;
   $('pList').innerHTML = list.map(p => {
     const n = countOf(br, p.name);
-    return `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${prodIcon(p.name)}</span><span>${esc(p.name)}<small>${[...p.steps, ...p.extras].map(esc).join(' › ')}</small>${n ? `<span class="badge">วันนี้ ${n} ตัว</span>` : ''}</span></button>`;
+    return `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${prodIcon(p.name)}</span><span>${esc(p.name)}<small>${[...p.steps, ...p.extras].map(esc).join(' › ')}</small>${n ? `<span class="badge">วันนี้ ${n} ฟิลเลย์</span>` : ''}</span></button>`;
   }).join('');
 }
 const ICONS = [[/แซลมอน|salmon/i,'🍣'],[/ปลา|fish|ทูน่า|tuna|ซาบะ/i,'🐟'],[/กุ้ง|shrimp|prawn/i,'🦐'],[/ปู|crab/i,'🦀'],[/หมึก|squid|octopus/i,'🦑'],[/หอย|shell|oyster/i,'🦪'],
@@ -433,11 +430,11 @@ function startRecord(p) {
     photos: [], idx: 0
   };
   renderCap();
-  show('sCap', `${p.name} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
+  show('sCap', `${p.name} • ฟิลเลย์ที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
 }
 function renderCap() {
   const st = S.steps[S.idx], ph = S.photos[S.idx];
-  $('capCount').textContent = `ขั้นที่ ${S.idx + 1} / ${S.steps.length}` + (st.role === 'extra' ? ' (รูปเพิ่มเติม ไม่บังคับ)' : '');
+  $('capCount').textContent = `ขั้นที่ ${S.idx + 1} / ${S.steps.length}` + (st.role === 'extra' ? ' (ข้ามได้)' : '');
   $('capTitle').textContent = 'ถ่ายรูป: ' + st.label;
   const pv = $('capPrev');
   pv.style.backgroundImage = ph ? `url(${ph.stamped})` : ''; pv.innerHTML = ph ? '' : '<span style="font-size:46px">📷</span><span>แตะปุ่มด้านล่างเพื่อถ่ายรูป</span>';
@@ -518,10 +515,10 @@ function setUnit() {
 }
 function goWeight() {
   setUnit(); calc();
-  show('sW', `${S.product} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
+  show('sW', `${S.product} • ฟิลเลย์ที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } });
 }
 ['wBefore', 'wWaste', 'wAfter'].forEach(id => $(id).oninput = calc);
-$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', `${S.product} • ตัวที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } }); };
+$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', `${S.product} • ฟิลเลย์ที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } }); };
 let collageTimer;
 function vals() {
   const r = v => Math.round((parseFloat(v) || 0) * 100) / 100;
@@ -533,7 +530,7 @@ function calc() {
   $('rYield').textContent = ok ? f2(v.after / v.before * 100) + '%' : '-';
   $('rWaste').textContent = ok ? f2(v.waste / v.before * 100) + '%' : '-';
   $('rLoss').textContent = ok ? `${f2(loss)} ${unit} (${f2(loss / v.before * 100)}%)` : '-';
-  $('wWarn').textContent = ok && loss < -0.0001 ? '⚠️ น้ำหนักหลังตัดแต่ง + เศษ มากกว่าน้ำหนักก่อนตัดแต่ง กรุณาตรวจสอบ' : '';
+  $('wWarn').textContent = ok && loss < -0.0001 ? '⚠️ หลังตัดแต่งรวมกับเศษแล้วหนักกว่าก่อนตัดแต่ง ลองเช็กน้ำหนักอีกครั้ง' : '';
   $('btnSave').disabled = !(ok && v.after > 0);
   clearTimeout(collageTimer);
   collageTimer = setTimeout(() => { $('collagePrev').src = buildCollage().toDataURL('image/jpeg', 0.7); }, 250);
@@ -578,14 +575,12 @@ function buildCollage() {
 /* ---------- save ---------- */
 $('btnSave').onclick = async () => {
   const v = vals();
-  busy(true, 'กำลังบันทึกขึ้น Drive...');
+  busy(true, 'กำลังบันทึก...');
   try {
-    const extras = S.steps.map((s, i) => ({ s, p: S.photos[i] })).filter(x => x.s.role === 'extra' && x.p)
-      .map(x => ({ label: x.s.label, data: x.p.stamped }));
     const body = {
       action: 'save', code: localStorage.getItem(LS.code),
       branch: S.branch, employee: S.employee, product: S.product, piece: S.piece, appVersion: APP_VERSION, unit, ...v,
-      collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)), extras,
+      collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)),
       photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${S.photos[i].src === 'gallery' ? ' (แกลเลอรี)' : ''}` : null).filter(Boolean)
     };
     const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
@@ -593,8 +588,8 @@ $('btnSave').onclick = async () => {
     busy(false);
     if (!res.ok) { alert('บันทึกไม่สำเร็จ: ' + res.error); return; }
     addCount(S.branch, S.product); S.lastId = res.id;
-    $('doneInfo').textContent = `${S.product} ตัวที่ ${S.piece} • ${S.branch} • ${res.id}`;
-    $('btnPiece').textContent = `+ ถ่ายตัวถัดไป: ${S.product} (ตัวที่ ${S.piece + 1})`;
+    $('doneInfo').textContent = `${S.product} ฟิลเลย์ที่ ${S.piece} • ${S.branch} • ${res.id}`;
+    $('btnPiece').textContent = `+ ถ่ายฟิลเลย์ถัดไป: ${S.product} (ฟิลเลย์ที่ ${S.piece + 1})`;
     $('dYield').textContent = f2(res.yieldPct) + '%';
     $('dWaste').textContent = f2(res.wastePct) + '%';
     $('dLoss').textContent = f2(res.lossPct) + '%';
@@ -602,7 +597,7 @@ $('btnSave').onclick = async () => {
     show('sDone', 'บันทึกแล้ว');
   } catch (e) {
     busy(false);
-    alert('ส่งข้อมูลไม่ได้ (ตรวจสอบอินเทอร์เน็ต) แล้วกดบันทึกอีกครั้ง\n' + e.message);
+    alert('ส่งข้อมูลไม่สำเร็จ ลองเช็กอินเทอร์เน็ตแล้วกดบันทึกอีกครั้ง\n' + e.message);
   }
 };
 $('btnNew').onclick = goHome;
@@ -625,7 +620,7 @@ async function shareImage(dataUrl, filename, text) {
 }
 $('btnSaveImg').onclick = () => {
   if (!S || !S.collageData) return;
-  shareImage(S.collageData, `${S.lastId || 'yield'}_${S.branch}_${S.product}.jpg`, `${S.product} ตัวที่ ${S.piece}`);
+  shareImage(S.collageData, `${S.lastId || 'yield'}_${S.branch}_${S.product}.jpg`, `${S.product} ฟิลเลย์ที่ ${S.piece}`);
 };
 
 /* ---------- สรุป (แอดมิน) ---------- */
@@ -665,45 +660,60 @@ function calcSum(rows) {
   return { n, sb, sa, sw, y: sb ? sa / sb * 100 : 0, w: sb ? sw / sb * 100 : 0, l: sb ? (sb - sa - sw) / sb * 100 : 0,
     min: n ? Math.min(...rows.map(r => r.yieldPct)) : 0, max: n ? Math.max(...rows.map(r => r.yieldPct)) : 0 };
 }
-function groupRows() {
+/** แยกตามสินค้า → [[ชื่อสินค้า, rows], ...] */
+function byProduct(rows) {
+  const g = {}; rows.forEach(r => (g[r.product] = g[r.product] || []).push(r));
+  return Object.entries(g).sort((a, b) => a[0].localeCompare(b[0], 'th'));
+}
+function groupRows(rows) {
   const byBranch = SUM.branch === 'ทุกสาขา', g = {};
-  SUM.rows.forEach(r => { const k = byBranch ? r.branch : r.date; (g[k] = g[k] || []).push(r); });
+  rows.forEach(r => { const k = byBranch ? r.branch : r.date; (g[k] = g[k] || []).push(r); });
   return { byBranch, groups: Object.entries(g).sort((a, b) => byBranch ? a[0].localeCompare(b[0]) : b[0].localeCompare(a[0])) };
 }
+const periodText = () => SUM.from === SUM.to ? thDate(SUM.from) : `${thDate(SUM.from)} – ${thDate(SUM.to)}`;
 function renderSummary() {
-  const k = calcSum(SUM.rows), period = SUM.from === SUM.to ? thDate(SUM.from) : `${thDate(SUM.from)} – ${thDate(SUM.to)}`;
   $('sumOut').style.display = '';
-  $('sumTitle').textContent = `${SUM.branch} • ${SUM.product} • ${period}`;
-  if (!k.n) { $('sumKpi').innerHTML = '<div class="big" style="background:rgba(255,255,255,.4);color:var(--mut)">ไม่มีข้อมูลในช่วงนี้</div>'; $('sumGrp').innerHTML = ''; $('sumGrpLbl').textContent = ''; $('sumList').innerHTML = ''; return; }
-  $('sumKpi').innerHTML = `
-    <div class="big"><span class="mut">Yield รวม (ถ่วงน้ำหนัก)</span><b>${f2(k.y)}%</b><span class="mut">ต่ำสุด ${f2(k.min)}% • สูงสุด ${f2(k.max)}%</span></div>
-    <div><span class="mut">จำนวน</span><b>${k.n} ตัว</b></div>
-    <div><span class="mut">น้ำหนักก่อน → หลัง</span><b style="font-size:17px">${f2(k.sb)} → ${f2(k.sa)} kg</b></div>
-    <div><span class="mut">เศษ</span><b>${f2(k.w)}%</b></div>
-    <div><span class="mut">Loss</span><b class="${k.l > 5 ? 'bad' : ''}">${f2(k.l)}%</b></div>`;
-  const { byBranch, groups } = groupRows();
-  $('sumGrpLbl').textContent = byBranch ? 'แยกตามสาขา' : 'แยกตามวัน';
-  $('sumGrp').innerHTML = `<tr><th>${byBranch ? 'สาขา' : 'วันที่'}</th><th class="n">ตัว</th><th class="n">Yield</th><th class="n">เศษ</th><th class="n">Loss</th></tr>` +
-    groups.map(([key, rs]) => { const c = calcSum(rs); return `<tr><td>${byBranch ? key : thDate(key)}</td><td class="n">${c.n}</td><td class="n"><b>${f2(c.y)}%</b></td><td class="n">${f2(c.w)}%</td><td class="n ${c.l > 5 ? 'bad' : ''}">${f2(c.l)}%</td></tr>`; }).join('');
-  $('sumList').innerHTML = SUM.rows.slice().reverse().map(r => `<a class="rec" href="${esc(r.url)}" target="_blank" rel="noopener">
+  $('sumTitle').textContent = `${SUM.branch} • ${periodText()}`;
+  if (!SUM.rows.length) { $('sumCards').innerHTML = '<div class="card"><p class="mut" style="margin:0">ไม่มีข้อมูลในช่วงนี้</p></div>'; $('sumList').innerHTML = ''; return; }
+  const prods = byProduct(SUM.rows);
+  $('sumCards').innerHTML = prods.map(([name, rows]) => {
+    const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+    return `<div class="card">
+      <p class="stepttl" style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="ic" style="font-size:24px">${prodIcon(name)}</span>${esc(name)}</p>
+      <div class="kpi">
+        <div class="big"><span class="mut">Yield รวม</span><b>${f2(k.y)}%</b><span class="mut">ต่ำสุด ${f2(k.min)}% • สูงสุด ${f2(k.max)}%</span></div>
+        <div><span class="mut">จำนวน</span><b>${k.n} ฟิลเลย์</b></div>
+        <div><span class="mut">น้ำหนักก่อน → หลัง</span><b style="font-size:17px">${f2(k.sb)} → ${f2(k.sa)} kg</b></div>
+        <div><span class="mut">เศษ</span><b>${f2(k.w)}%</b></div>
+        <div><span class="mut">Loss</span><b class="${k.l > 5 ? 'bad' : ''}">${f2(k.l)}%</b></div>
+      </div>
+      <label>${byBranch ? 'แยกตามสาขา' : 'แยกตามวัน'}</label>
+      <table class="t"><tr><th>${byBranch ? 'สาขา' : 'วันที่'}</th><th class="n">ฟิลเลย์</th><th class="n">Yield</th><th class="n">เศษ</th><th class="n">Loss</th></tr>
+      ${groups.map(([key, rs]) => { const c = calcSum(rs); return `<tr><td>${byBranch ? key : thDate(key)}</td><td class="n">${c.n}</td><td class="n"><b>${f2(c.y)}%</b></td><td class="n">${f2(c.w)}%</td><td class="n ${c.l > 5 ? 'bad' : ''}">${f2(c.l)}%</td></tr>`; }).join('')}
+      </table></div>`;
+  }).join('');
+  $('sumList').innerHTML = prods.map(([name, rows]) => `<p class="stepttl" style="font-size:16px;margin:14px 0 2px">${prodIcon(name)} ${esc(name)} <span class="mut">(${rows.length})</span></p>` +
+    rows.slice().reverse().map(r => `<a class="rec" href="${esc(r.url)}" target="_blank" rel="noopener">
       <img loading="lazy" src="${r.fileId ? `https://drive.google.com/thumbnail?id=${r.fileId}&sz=w200` : ''}" alt="">
-      <div class="info"><b>${esc(r.branch)}</b> • ${esc(r.product)}${r.piece ? ' #' + r.piece : ''}<br>
+      <div class="info"><b>${esc(r.branch)}</b>${r.piece ? ' • ฟิลเลย์ที่ ' + r.piece : ''}<br>
       <span class="mut">${thDate(r.date)} ${r.time} • ${esc(r.employee)}</span><br>
       <span class="mut">เศษ ${f2(r.wastePct)}% • <span class="${r.lossPct > 5 ? 'bad' : ''}">Loss ${f2(r.lossPct)}%</span></span></div>
-      <div class="y">${f2(r.yieldPct)}%</div></a>`).join('');
+      <div class="y">${f2(r.yieldPct)}%</div></a>`).join('')).join('');
 }
 function summaryText() {
-  const k = calcSum(SUM.rows), { byBranch, groups } = groupRows();
-  const period = SUM.from === SUM.to ? thDate(SUM.from) : `${thDate(SUM.from)} – ${thDate(SUM.to)}`;
-  let t = `📊 สรุป Yield ${SUM.product}\n${SUM.branch} • ${period}\n\n`;
-  t += `จำนวน ${k.n} ตัว\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\nเศษ ${f2(k.w)}% • Loss ${f2(k.l)}%\nน้ำหนัก ${f2(k.sb)} → ${f2(k.sa)} kg\n`;
-  if (groups.length > 1) { t += `\n${byBranch ? 'แยกสาขา' : 'แยกวัน'}:\n`; groups.forEach(([key, rs]) => { const c = calcSum(rs); t += `• ${byBranch ? key : thDate(key)}: ${c.n} ตัว | Yield ${f2(c.y)}% | Loss ${f2(c.l)}%\n`; }); }
+  let t = `📊 สรุป Yield\n${SUM.branch} • ${periodText()}\n`;
+  byProduct(SUM.rows).forEach(([name, rows]) => {
+    const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+    t += `\n${prodIcon(name)} ${name}\n━━━━━━━━━━\n`;
+    t += `จำนวน ${k.n} ฟิลเลย์\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\nเศษ ${f2(k.w)}% • Loss ${f2(k.l)}%\nน้ำหนัก ${f2(k.sb)} → ${f2(k.sa)} kg\n`;
+    if (groups.length > 1) { t += `${byBranch ? 'แยกสาขา' : 'แยกวัน'}:\n`; groups.forEach(([key, rs]) => { const c = calcSum(rs); t += `• ${byBranch ? key : thDate(key)}: ${c.n} ฟิลเลย์ | Yield ${f2(c.y)}% | Loss ${f2(c.l)}%\n`; }); }
+  });
   return t;
 }
 $('btnSumText').onclick = async () => {
   if (!SUM || !SUM.rows.length) return;
   const t = summaryText();
-  try { await navigator.clipboard.writeText(t); alert('คัดลอกแล้ว นำไปวางใน LINE ได้เลย'); }
+  try { await navigator.clipboard.writeText(t); alert('คัดลอกแล้ว วางใน LINE ได้เลย'); }
   catch (_) { prompt('คัดลอกข้อความนี้', t); }
 };
 $('btnSumShare').onclick = () => {
@@ -711,48 +721,58 @@ $('btnSumShare').onclick = () => {
   shareImage(summaryImage(), `yield-summary_${SUM.branch}_${SUM.from}_${SUM.to}.jpg`, summaryText());
 };
 function summaryImage() {
-  const k = calcSum(SUM.rows), { byBranch, groups } = groupRows(), rows = SUM.rows.slice().reverse().slice(0, 25);
-  const W = 1080, rowH = 46, H = 470 + (groups.length > 1 ? 80 + groups.length * rowH : 0) + 90 + rows.length * rowH + 120;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const c = cv.getContext('2d'), F = '-apple-system,"Noto Sans Thai",sans-serif';
-  const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#dff3ec'); g.addColorStop(.6, '#fbe9df'); g.addColorStop(1, '#fff6d9');
-  c.fillStyle = g; c.fillRect(0, 0, W, H);
-  c.fillStyle = '#1f6f5c'; c.fillRect(0, 0, W, 150);
-  c.fillStyle = '#fff'; c.font = `bold 48px ${F}`; c.fillText(`สรุป Yield ${SUM.product}`, 50, 75);
-  const period = SUM.from === SUM.to ? thDate(SUM.from) : `${thDate(SUM.from)} – ${thDate(SUM.to)}`;
-  c.font = `28px ${F}`; c.fillText(`${SUM.branch}  •  ${period}`, 50, 122);
-  // kpi
-  const box = (x, y, w, h, fill) => { c.fillStyle = fill; c.beginPath(); c.roundRect(x, y, w, h, 22); c.fill(); };
-  box(50, 180, 980, 150, '#f47b4c');
-  c.fillStyle = '#fff'; c.font = `26px ${F}`; c.fillText('Yield รวม (ถ่วงน้ำหนัก)', 80, 222);
-  c.font = `bold 72px ${F}`; c.fillText(f2(k.y) + '%', 80, 300);
-  c.font = `26px ${F}`; c.textAlign = 'right'; c.fillText(`${k.n} ตัว`, 1000, 222);
-  c.fillText(`ต่ำสุด ${f2(k.min)}%  สูงสุด ${f2(k.max)}%`, 1000, 300); c.textAlign = 'left';
-  [['เศษ', f2(k.w) + '%'], ['Loss', f2(k.l) + '%'], ['ก่อน → หลัง', `${f2(k.sb)} → ${f2(k.sa)} kg`]].forEach(([l, v], i) => {
-    const x = 50 + i * 330; box(x, 350, 310, 100, 'rgba(255,255,255,.75)');
-    c.fillStyle = '#4e6660'; c.font = `24px ${F}`; c.fillText(l, x + 24, 386);
-    c.fillStyle = l === 'Loss' && k.l > 5 ? '#c0392b' : '#16302a'; c.font = `bold ${i === 2 ? 30 : 38}px ${F}`; c.fillText(v, x + 24, 432);
-  });
-  let y = 500;
-  const table = (title, head, data) => {
-    c.fillStyle = '#1f6f5c'; c.font = `bold 28px ${F}`; c.fillText(title, 50, y); y += 20;
-    const cols = [60, 560, 700, 840, 1020];
-    c.font = `22px ${F}`; c.fillStyle = '#4e6660';
-    head.forEach((h, i) => { c.textAlign = i ? 'right' : 'left'; c.fillText(h, i ? cols[i + 1] : cols[0], y + 30); });
-    y += rowH;
-    data.forEach((d, ri) => {
-      if (ri % 2 === 0) { c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(50, y, 980, rowH); }
-      c.font = `24px ${F}`;
-      d.forEach((v, i) => { c.textAlign = i ? 'right' : 'left'; c.fillStyle = (i === 3 && parseFloat(v) > 5) ? '#c0392b' : '#16302a'; if (i === 1) c.font = `bold 24px ${F}`; else c.font = `24px ${F}`; c.fillText(v, i ? cols[i + 1] : cols[0], y + 31, i ? 200 : 480); });
+  const W = 1080, rowH = 46, F = '-apple-system,"Noto Sans Thai",sans-serif';
+  const draw = (c, H) => {
+    const box = (x, y, w, h, fill) => { c.fillStyle = fill; c.beginPath(); c.roundRect(x, y, w, h, 22); c.fill(); };
+    if (H) { const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#dff3ec'); g.addColorStop(.6, '#fbe9df'); g.addColorStop(1, '#fff6d9'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+    c.fillStyle = '#1f6f5c'; c.fillRect(0, 0, W, 150);
+    c.fillStyle = '#fff'; c.font = `bold 48px ${F}`; c.fillText('สรุป Yield', 50, 75);
+    c.font = `28px ${F}`; c.fillText(`${SUM.branch}  •  ${periodText()}`, 50, 122);
+    let y = 190;
+    const table = (title, head, data) => {
+      c.fillStyle = '#1f6f5c'; c.font = `bold 26px ${F}`; c.fillText(title, 50, y); y += 14;
+      const cols = [60, 560, 700, 840, 1020];
+      c.font = `22px ${F}`; c.fillStyle = '#4e6660';
+      head.forEach((h, i) => { c.textAlign = i ? 'right' : 'left'; c.fillText(h, i ? cols[i + 1] : cols[0], y + 30); });
       y += rowH;
+      data.forEach((d, ri) => {
+        if (ri % 2 === 0) { c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(50, y, 980, rowH); }
+        d.forEach((v, i) => { c.textAlign = i ? 'right' : 'left'; c.fillStyle = (i === 3 && parseFloat(v) > 5) ? '#c0392b' : '#16302a'; c.font = `${i === 1 ? 'bold ' : ''}24px ${F}`; c.fillText(v, i ? cols[i + 1] : cols[0], y + 31, i ? 200 : 480); });
+        y += rowH;
+      });
+      c.textAlign = 'left'; y += 30;
+    };
+    byProduct(SUM.rows).forEach(([name, rows]) => {
+      const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+      // หัวข้อสินค้า
+      box(50, y, 980, 64, 'rgba(31,111,92,.12)');
+      c.fillStyle = '#1f6f5c'; c.font = `bold 36px ${F}`; c.fillText(`${prodIcon(name)}  ${name}`, 74, y + 45, 920); y += 84;
+      box(50, y, 980, 150, '#f47b4c');
+      c.fillStyle = '#fff'; c.font = `26px ${F}`; c.fillText('Yield รวม', 80, y + 42);
+      c.font = `bold 72px ${F}`; c.fillText(f2(k.y) + '%', 80, y + 120);
+      c.font = `26px ${F}`; c.textAlign = 'right'; c.fillText(`${k.n} ฟิลเลย์`, 1000, y + 42);
+      c.fillText(`ต่ำสุด ${f2(k.min)}%  สูงสุด ${f2(k.max)}%`, 1000, y + 120); c.textAlign = 'left'; y += 170;
+      [['เศษ', f2(k.w) + '%'], ['Loss', f2(k.l) + '%'], ['ก่อน → หลัง', `${f2(k.sb)} → ${f2(k.sa)} kg`]].forEach(([l, v], i) => {
+        const x = 50 + i * 330; box(x, y, 310, 100, 'rgba(255,255,255,.75)');
+        c.fillStyle = '#4e6660'; c.font = `24px ${F}`; c.fillText(l, x + 24, y + 36);
+        c.fillStyle = l === 'Loss' && k.l > 5 ? '#c0392b' : '#16302a'; c.font = `bold ${i === 2 ? 30 : 38}px ${F}`; c.fillText(v, x + 24, y + 82);
+      });
+      y += 140;
+      if (groups.length > 1) table(byBranch ? 'แยกตามสาขา' : 'แยกตามวัน', [byBranch ? 'สาขา' : 'วันที่', 'Yield', 'เศษ', 'Loss'],
+        groups.map(([key, rs]) => { const s2 = calcSum(rs); return [`${byBranch ? key : thDate(key)}  (${s2.n} ฟิลเลย์)`, f2(s2.y) + '%', f2(s2.w) + '%', f2(s2.l) + '%']; }));
+      const list = rows.slice().reverse().slice(0, 15);
+      table(`รายการ${rows.length > 15 ? ' (15 ล่าสุด)' : ''}`, ['สาขา / เวลา / พนักงาน', 'Yield', 'เศษ', 'Loss'],
+        list.map(r => [`${r.branch} ${r.date.slice(8)}/${r.date.slice(5, 7)} ${r.time} ${r.employee}${r.piece ? ' #' + r.piece : ''}`, f2(r.yieldPct) + '%', f2(r.wastePct) + '%', f2(r.lossPct) + '%']));
+      y += 10;
     });
-    c.textAlign = 'left'; y += 40;
+    y += 20;
+    c.fillStyle = '#4e6660'; c.font = `20px ${F}`; c.fillText(`Yield Record v${APP_VERSION} • สร้างเมื่อ ${fmtDT(new Date())}`, 50, y);
+    return y + 40;
   };
-  if (groups.length > 1) table(byBranch ? 'แยกตามสาขา' : 'แยกตามวัน', [byBranch ? 'สาขา' : 'วันที่', 'Yield', 'เศษ', 'Loss'],
-    groups.map(([key, rs]) => { const s2 = calcSum(rs); return [`${byBranch ? key : thDate(key)}  (${s2.n} ตัว)`, f2(s2.y) + '%', f2(s2.w) + '%', f2(s2.l) + '%']; }));
-  table(`รายการ${SUM.rows.length > 25 ? ' (25 ล่าสุด)' : ''}`, ['สาขา / เวลา / พนักงาน', 'Yield', 'เศษ', 'Loss'],
-    rows.map(r => [`${r.branch} ${r.date.slice(8)}/${r.date.slice(5, 7)} ${r.time} ${r.employee}${r.piece ? ' #' + r.piece : ''}`, f2(r.yieldPct) + '%', f2(r.wastePct) + '%', f2(r.lossPct) + '%']));
-  c.fillStyle = '#4e6660'; c.font = `20px ${F}`; c.fillText(`Yield Record v${APP_VERSION} • สร้างเมื่อ ${fmtDT(new Date())}`, 50, H - 30);
+  const m = document.createElement('canvas'); m.width = W; m.height = 10;
+  const H = draw(m.getContext('2d'), 0);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  draw(cv.getContext('2d'), H);
   return cv.toDataURL('image/jpeg', 0.9);
 }
 
