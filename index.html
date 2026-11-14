@@ -82,7 +82,28 @@
   .hero h2{margin:12px 0 2px;font-size:24px;color:var(--pri)}
   .overlay{position:fixed;inset:0;background:rgba(20,40,35,.35);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:20;color:#fff;font-size:17px;flex-direction:column;gap:12px}
   .overlay.on{display:flex}
-  .spin{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite}
+  .wrow{display:flex;gap:8px;align-items:stretch}
+  .wrow input{flex:1;min-width:0}
+  .unit.mini{margin:0;flex:0 0 auto;padding:3px;border-radius:12px}
+  .unit.mini button{flex:none;padding:8px 13px;font-size:15px;border-radius:9px}
+  .loader{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .loader svg{width:170px;height:120px;overflow:visible}
+  .loader.sm svg{width:110px;height:78px}
+  .loader .fish{animation:jump 1.5s cubic-bezier(.45,.05,.55,.95) infinite}
+  @keyframes jump{
+    0%{transform:translate(48px,128px) rotate(-62deg)}
+    22%{transform:translate(70px,62px) rotate(-38deg)}
+    50%{transform:translate(100px,38px) rotate(0deg)}
+    78%{transform:translate(130px,62px) rotate(38deg)}
+    100%{transform:translate(152px,128px) rotate(62deg)}}
+  .loader .spl{fill:none;stroke:#7fd3c2;stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+  .loader .s1{animation:spl 1.5s ease-out infinite}
+  .loader .s2{animation:spl 1.5s ease-out infinite;animation-delay:.75s}
+  @keyframes spl{0%{opacity:.9;transform:scale(.3)}45%{opacity:0;transform:scale(1.4)}100%{opacity:0}}
+  .loader .wave{animation:wave 2s linear infinite}
+  @keyframes wave{to{transform:translateX(-40px)}}
+  .overlay .loader span{font-size:17px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .card .loader span{color:var(--mut);font-size:14px}
   @keyframes s{to{transform:rotate(360deg)}}
   .ok{font-size:60px;text-align:center}
   input[type=file]{display:none}
@@ -231,10 +252,9 @@
 <section class="screen" id="sW">
   <div class="card">
     <p class="stepttl">กรอกน้ำหนัก</p>
-    <div class="unit"><button data-u="kg" class="on">กิโลกรัม (kg)</button><button data-u="g">กรัม (g)</button></div>
-    <div class="field"><label id="lBefore"></label><input id="wBefore" type="number" inputmode="decimal" step="0.01" min="0"></div>
-    <div class="field"><label id="lWaste"></label><input id="wWaste" type="number" inputmode="decimal" step="0.01" min="0"></div>
-    <div class="field"><label id="lAfter"></label><input id="wAfter" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    <div class="field"><label id="lBefore"></label><div class="wrow"><input id="wBefore" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="wBefore"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
+    <div class="field"><label id="lWaste"></label><div class="wrow"><input id="wWaste" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="wWaste"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
+    <div class="field"><label id="lAfter"></label><div class="wrow"><input id="wAfter" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="wAfter"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
     <div class="res">
       <div class="big"><span>Yield</span><b id="rYield">-</b></div>
       <div><span class="mut">เศษตัดแต่ง</span><b id="rWaste">-</b></div>
@@ -307,10 +327,9 @@
   </div>
   <div class="card">
     <div class="field"><label>ชื่อพนักงาน</label><input id="eName"></div>
-    <div class="unit" id="eUnit"><button data-u="kg">กิโลกรัม (kg)</button><button data-u="g">กรัม (g)</button></div>
-    <div class="field"><label id="leBefore"></label><input id="eBefore" type="number" inputmode="decimal" step="0.01" min="0"></div>
-    <div class="field"><label id="leWaste"></label><input id="eWaste" type="number" inputmode="decimal" step="0.01" min="0"></div>
-    <div class="field"><label id="leAfter"></label><input id="eAfter" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    <div class="field"><label id="leBefore"></label><div class="wrow"><input id="eBefore" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="eBefore"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
+    <div class="field"><label id="leWaste"></label><div class="wrow"><input id="eWaste" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="eWaste"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
+    <div class="field"><label id="leAfter"></label><div class="wrow"><input id="eAfter" type="number" inputmode="decimal" step="0.01" min="0"><div class="unit mini" data-for="eAfter"><button data-u="kg">kg</button><button data-u="g">g</button></div></div></div>
     <div class="res">
       <div class="big"><span>Yield</span><b id="erYield">-</b></div>
       <div><span class="mut">เศษ</span><b id="erWaste">-</b></div>
@@ -345,15 +364,16 @@
   <ul id="verList"></ul>
   <button class="btn" id="verOk">ตกลง</button>
 </div></div>
-<div class="overlay" id="ovl"><div class="spin"></div><div id="ovlTxt">กำลังบันทึก...</div></div>
+<div class="overlay" id="ovl"><div class="loader" id="ovlLoader"></div></div>
 
 <script>
 /* ====== ตั้งค่า: วาง URL ของ Apps Script Web app ที่นี่ ====== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 const CHANGELOG = {
+  '1.4.0': ['เลือกหน่วย kg หรือ g ได้ทีละช่องน้ำหนัก ไม่ต้องใช้หน่วยเดียวกันทั้งหมด', 'ระหว่างรอโหลดจะมีแซลมอนกระโดดให้ดู'],
   '1.3.0': ['แก้ไขรายการย้อนหลังได้ที่ปุ่ม "ประวัติ / แก้ไข" ทั้งน้ำหนัก ชื่อพนักงาน และรูป', 'กดบันทึกแล้ว ข้อมูลใน Sheet กับรูปคอลลาจใน Drive จะอัปเดตทับของเดิม'],
   '1.2.1': ['หน้าสรุปแยกตามสินค้า ทั้งในแอป รูปที่แชร์ และข้อความ', 'นับจำนวนเป็นฟิลเลย์ (ฟิลเลย์ที่ 1, 2, 3)', 'Drive เก็บเฉพาะรูปคอลลาจ แยกโฟลเดอร์ตามสาขา สินค้า และวันที่', 'ปรับข้อความในแอปให้อ่านง่ายขึ้น'],
   '1.2.0': ['เซฟรูปคอลลาจลงเครื่องได้หลังบันทึก', 'แอดมินดูสรุป Yield ของแต่ละสาขาย้อนหลังได้', 'แชร์รูปสรุปหรือคัดลอกข้อความส่งให้สาขาทาง LINE ได้'],
@@ -377,7 +397,26 @@ function show(id, title, btn) {
   if (btn) { hb.style.display = ''; hb.textContent = btn.text; hb.onclick = btn.fn; } else hb.style.display = 'none';
   window.scrollTo(0, 0);
 }
-function busy(on, txt) { $('ovl').classList.toggle('on', on); if (txt) $('ovlTxt').textContent = txt; }
+const loaderHTML = txt => `<svg viewBox="0 0 200 140" aria-hidden="true">
+  <defs>
+    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f7584"/><stop offset=".42" stop-color="#ff936b"/><stop offset="1" stop-color="#ffe1d2"/></linearGradient>
+    <clipPath id="above"><rect x="-20" y="-40" width="240" height="160"/></clipPath>
+  </defs>
+  <g clip-path="url(#above)"><g class="fish">
+    <path d="M-30 0L-46 -13L-41 0L-46 13Z" fill="#e8744f"/>
+    <path d="M-34 0C-20 -15 14 -17 30 -5C35 -2 35 2 30 5C14 15 -20 13 -34 0Z" fill="url(#sg)"/>
+    <path d="M-6 -12C0 -20 8 -20 12 -14Z" fill="#e8744f"/>
+    <path d="M-2 7C3 13 9 13 11 9Z" fill="#e8744f"/>
+    <path d="M-24 1C-6 4 12 4 28 1" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>
+    <g fill="#35505b" opacity=".55"><circle cx="-14" cy="-7" r="1.3"/><circle cx="-5" cy="-9" r="1.3"/><circle cx="5" cy="-9" r="1.3"/><circle cx="-9" cy="-3" r="1.1"/><circle cx="1" cy="-4" r="1.1"/></g>
+    <path d="M18 -6C20 -1 20 3 18 6" fill="none" stroke="#c45a3c" stroke-width="1.4"/>
+    <circle cx="25" cy="-2" r="2.2" fill="#1d2b31"/><circle cx="25.6" cy="-2.6" r=".7" fill="#fff"/>
+  </g></g>
+  <ellipse class="spl s1" cx="50" cy="121" rx="16" ry="5"/>
+  <ellipse class="spl s2" cx="150" cy="121" rx="16" ry="5"/>
+  <g class="wave"><path d="M-40 122 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V140 H-40Z" fill="#3cc0a3" opacity=".75"/></g>
+</svg><span>${txt || 'กำลังโหลด...'}</span>`;
+function busy(on, txt) { $('ovl').classList.toggle('on', on); if (on) $('ovlLoader').innerHTML = loaderHTML(txt); }
 
 async function api(params) {
   const r = await fetch(API_URL + '?' + new URLSearchParams(params));
@@ -406,7 +445,7 @@ function logout(msg) {
   $('inCode').value = ''; $('loginErr').textContent = msg || '';
   show('sLogin');
 }
-$('btnLogin').onclick = () => { const c = $('inCode').value.trim(); if (c) { $('loginErr').textContent = 'กำลังตรวจสอบ...'; login(c); } };
+$('btnLogin').onclick = async () => { const c = $('inCode').value.trim(); if (!c) return; $('loginErr').textContent = ''; busy(true, 'กำลังตรวจสอบรหัส...'); await login(c); busy(false); };
 
 /* ---------- นับจำนวนต่อวัน ---------- */
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -546,13 +585,36 @@ function drawStamp(c, x, y, w, h, label, time) {
 }
 
 /* ---------- weight ---------- */
-let unit = localStorage.getItem(LS.unit) || 'kg';
-document.querySelectorAll('.unit button').forEach(b => b.onclick = () => { unit = b.dataset.u; localStorage.setItem(LS.unit, unit); setUnit(); calc(); });
+// หน่วยของแต่ละช่องน้ำหนัก (kg / g)
+const UNIT = {};
+(function loadUnits() { try { Object.assign(UNIT, JSON.parse(localStorage.getItem('yr_units') || '{}')); } catch (_) {} })();
+function paintUnits() {
+  document.querySelectorAll('.unit.mini').forEach(box => {
+    const u = UNIT[box.dataset.for] || 'kg';
+    box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.u === u));
+  });
+}
+document.querySelectorAll('.unit.mini').forEach(box => box.onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  UNIT[box.dataset.for] = b.dataset.u;
+  if (box.dataset.for[0] === 'w') {
+    localStorage.setItem('yr_units', JSON.stringify({ wBefore: UNIT.wBefore, wWaste: UNIT.wWaste, wAfter: UNIT.wAfter }));
+    paintUnits(); calc();
+  } else { paintUnits(); calcEdit(); }
+});
+/** อ่านน้ำหนัก 3 ช่อง แปลงเป็นหน่วยเดียวกัน (ถ้าหน่วยไม่ตรงกันจะเก็บเป็นกรัม) */
+function readW(ids) {
+  const r2 = v => Math.round(v * 100) / 100, keys = ['before', 'waste', 'after'], raw = {};
+  keys.forEach((k, i) => raw[k] = { v: r2(parseFloat($(ids[i]).value) || 0), u: UNIT[ids[i]] || 'kg' });
+  const us = [...new Set(keys.map(k => raw[k].u))], base = us.length === 1 ? us[0] : 'g';
+  const conv = ({ v, u }) => u === base ? v : base === 'g' ? r2(v * 1000) : r2(v / 1000);
+  return { before: conv(raw.before), waste: conv(raw.waste), after: conv(raw.after), unit: base, raw };
+}
 function setUnit() {
-  document.querySelectorAll('.unit button').forEach(b => b.classList.toggle('on', b.dataset.u === unit));
-  $('lBefore').textContent = `น้ำหนัก${S.steps[0].label} (${unit})`;
-  $('lWaste').textContent = `น้ำหนัก${S.steps[1].label} (${unit})`;
-  $('lAfter').textContent = `น้ำหนัก${S.steps[2].label} (${unit})`;
+  $('lBefore').textContent = `น้ำหนัก${S.steps[0].label}`;
+  $('lWaste').textContent = `น้ำหนัก${S.steps[1].label}`;
+  $('lAfter').textContent = `น้ำหนัก${S.steps[2].label}`;
+  paintUnits();
 }
 function goWeight() {
   setUnit(); calc();
@@ -561,16 +623,13 @@ function goWeight() {
 ['wBefore', 'wWaste', 'wAfter'].forEach(id => $(id).oninput = calc);
 $('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', `${S.product} • ฟิลเลย์ที่ ${S.piece}`, { text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรายการนี้?')) goHome(); } }); };
 let collageTimer;
-function vals() {
-  const r = v => Math.round((parseFloat(v) || 0) * 100) / 100;
-  return { before: r($('wBefore').value), waste: r($('wWaste').value), after: r($('wAfter').value) };
-}
+const vals = () => readW(['wBefore', 'wWaste', 'wAfter']);
 function calc() {
   const v = vals(), ok = v.before > 0;
   const loss = v.before - v.after - v.waste;
   $('rYield').textContent = ok ? f2(v.after / v.before * 100) + '%' : '-';
   $('rWaste').textContent = ok ? f2(v.waste / v.before * 100) + '%' : '-';
-  $('rLoss').textContent = ok ? `${f2(loss)} ${unit} (${f2(loss / v.before * 100)}%)` : '-';
+  $('rLoss').textContent = ok ? `${f2(loss)} ${v.unit} (${f2(loss / v.before * 100)}%)` : '-';
   $('wWarn').textContent = ok && loss < -0.0001 ? '⚠️ หลังตัดแต่งรวมกับเศษแล้วหนักกว่าก่อนตัดแต่ง ลองเช็กน้ำหนักอีกครั้ง' : '';
   $('btnSave').disabled = !(ok && v.after > 0);
   clearTimeout(collageTimer);
@@ -591,8 +650,9 @@ function drawInfo(c, y0, W, INFO, d) {
   c.font = `bold 40px ${F}`; c.fillText(`${d.product}${d.piece ? '  #' + d.piece : ''}`, 30, y0 + 22, 760);
   c.font = `26px ${F}`;
   c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 780);
-  c.fillText(`${d.labels[0]} ${f2(v.before)}  |  ${d.labels[1]} ${f2(v.waste)}  |  ${d.labels[2]} ${f2(v.after)} ${d.unit}`, 30, y0 + 125, 780);
-  c.fillText(`เศษ ${ok ? f2(v.waste / v.before * 100) : '-'}%   Loss ${f2(loss)} ${d.unit} (${ok ? f2(loss / v.before * 100) : '-'}%)`, 30, y0 + 170, 780);
+  const w = v.raw || { before: { v: v.before, u: v.unit }, waste: { v: v.waste, u: v.unit }, after: { v: v.after, u: v.unit } };
+  c.fillText(`${d.labels[0]} ${f2(w.before.v)} ${w.before.u}  |  ${d.labels[1]} ${f2(w.waste.v)} ${w.waste.u}  |  ${d.labels[2]} ${f2(w.after.v)} ${w.after.u}`, 30, y0 + 125, 780);
+  c.fillText(`เศษ ${ok ? f2(v.waste / v.before * 100) : '-'}%   Loss ${f2(loss)} ${v.unit} (${ok ? f2(loss / v.before * 100) : '-'}%)`, 30, y0 + 170, 780);
   c.textAlign = 'right';
   c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
   c.font = `bold 80px ${F}`; c.fillStyle = '#ffd54a';
@@ -612,7 +672,7 @@ function buildCollage() {
     else { c.fillStyle = '#ddd'; c.fillRect(x, y, w, h); }
   });
   drawInfo(c, TOP + GAP + SQ, W, INFO, { product: S.product, piece: S.piece, branch: S.branch, employee: S.employee,
-    when: fmtDT(new Date()), labels: S.steps.slice(0, 3).map(x => x.label), v: vals(), unit });
+    when: fmtDT(new Date()), labels: S.steps.slice(0, 3).map(x => x.label), v: vals() });
   return cv;
 }
 
@@ -623,7 +683,8 @@ $('btnSave').onclick = async () => {
   try {
     const body = {
       action: 'save', code: localStorage.getItem(LS.code),
-      branch: S.branch, employee: S.employee, product: S.product, piece: S.piece, appVersion: APP_VERSION, unit, ...v,
+      branch: S.branch, employee: S.employee, product: S.product, piece: S.piece, appVersion: APP_VERSION,
+      unit: v.unit, before: v.before, waste: v.waste, after: v.after,
       collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)),
       photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${S.photos[i].src === 'gallery' ? ' (แกลเลอรี)' : ''}` : null).filter(Boolean)
     };
@@ -832,7 +893,7 @@ function goHist() {
   loadHist();
 }
 async function loadHist() {
-  $('histList').innerHTML = '<p class="mut">กำลังโหลด...</p>';
+  $('histList').innerHTML = `<div class="loader sm">${loaderHTML('กำลังโหลดรายการ...')}</div>`;
   try {
     const res = await api({ action: 'list', code: localStorage.getItem(LS.code), branch: $('inBranch').value, days: $('histDays').value });
     if (!res.ok) { $('histList').innerHTML = `<p class="warn">${esc(res.error)}</p>`; return; }
@@ -857,7 +918,7 @@ async function openEdit(rec) {
     if (!res.ok) throw new Error(res.error);
     const base = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('เปิดรูปเดิมไม่ได้')); im.src = res.data; });
     const p = cfg.products.find(x => x.name === rec.product);
-    E.rec = rec; E.base = base; E.photos = [null, null, null]; E.unit = rec.unit === 'g' ? 'g' : 'kg';
+    E.rec = rec; E.base = base; E.photos = [null, null, null]; ['eBefore', 'eWaste', 'eAfter'].forEach(id => UNIT[id] = rec.unit === 'g' ? 'g' : 'kg');
     E.labels = p ? p.steps : ['ก่อนตัดแต่ง', 'เศษตัดแต่ง', 'ตัดแต่งแล้ว'];
     $('eName').value = rec.employee;
     $('eBefore').value = rec.before; $('eWaste').value = rec.waste; $('eAfter').value = rec.after;
@@ -869,23 +930,19 @@ async function openEdit(rec) {
   } catch (e) { busy(false); alert('เปิดรายการไม่ได้: ' + e.message); }
 }
 function setEUnit() {
-  document.querySelectorAll('#eUnit button').forEach(b => b.classList.toggle('on', b.dataset.u === E.unit));
-  $('leBefore').textContent = `น้ำหนัก${E.labels[0]} (${E.unit})`;
-  $('leWaste').textContent = `น้ำหนัก${E.labels[1]} (${E.unit})`;
-  $('leAfter').textContent = `น้ำหนัก${E.labels[2]} (${E.unit})`;
+  $('leBefore').textContent = `น้ำหนัก${E.labels[0]}`;
+  $('leWaste').textContent = `น้ำหนัก${E.labels[1]}`;
+  $('leAfter').textContent = `น้ำหนัก${E.labels[2]}`;
+  paintUnits();
 }
-document.querySelectorAll('#eUnit button').forEach(b => b.onclick = () => { E.unit = b.dataset.u; setEUnit(); calcEdit(); });
 ['eBefore', 'eWaste', 'eAfter', 'eName'].forEach(id => $(id).oninput = calcEdit);
-function evals() {
-  const r = v => Math.round((parseFloat(v) || 0) * 100) / 100;
-  return { before: r($('eBefore').value), waste: r($('eWaste').value), after: r($('eAfter').value) };
-}
+const evals = () => readW(['eBefore', 'eWaste', 'eAfter']);
 let editTimer;
 function calcEdit() {
   const v = evals(), ok = v.before > 0, loss = v.before - v.after - v.waste;
   $('erYield').textContent = ok ? f2(v.after / v.before * 100) + '%' : '-';
   $('erWaste').textContent = ok ? f2(v.waste / v.before * 100) + '%' : '-';
-  $('erLoss').textContent = ok ? `${f2(loss)} ${E.unit} (${f2(loss / v.before * 100)}%)` : '-';
+  $('erLoss').textContent = ok ? `${f2(loss)} ${v.unit} (${f2(loss / v.before * 100)}%)` : '-';
   $('eWarn').textContent = ok && loss < -0.0001 ? '⚠️ หลังตัดแต่งรวมกับเศษแล้วหนักกว่าก่อนตัดแต่ง ลองเช็กน้ำหนักอีกครั้ง' : '';
   $('btnEditSave').disabled = !(ok && v.after > 0 && $('eName').value.trim());
   clearTimeout(editTimer);
@@ -902,7 +959,7 @@ function buildEditCollage() {
   });
   drawInfo(c, CL.TOP + CL.GAP + CL.SQ, CL.W, CL.INFO, { product: E.rec.product, piece: E.rec.piece, branch: E.rec.branch,
     employee: $('eName').value.trim(), when: `${thDate(E.rec.date)} ${E.rec.time} (แก้ไข ${fmtDT(new Date()).slice(0, 16)})`,
-    labels: E.labels, v: evals(), unit: E.unit });
+    labels: E.labels, v: evals() });
   return cv;
 }
 $('editPhotos').onclick = e => { const b = e.target.closest('[data-slot]'); if (!b) return; $('fEdit').dataset.slot = b.dataset.slot; $('fEdit').click(); };
@@ -919,7 +976,7 @@ $('btnEditSave').onclick = async () => {
   busy(true, 'กำลังบันทึก...');
   try {
     const body = { action: 'update', code: localStorage.getItem(LS.code), id: E.rec.id, employee: $('eName').value.trim(),
-      unit: E.unit, ...evals(), collage: buildEditCollage().toDataURL('image/jpeg', 0.85), appVersion: APP_VERSION };
+      ...(({ before, waste, after, unit }) => ({ before, waste, after, unit }))(evals()), collage: buildEditCollage().toDataURL('image/jpeg', 0.85), appVersion: APP_VERSION };
     const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
     const res = await r.json();
     busy(false);
@@ -943,7 +1000,7 @@ $('verOk').onclick = () => { localStorage.setItem(LS.ver, APP_VERSION); $('verMo
 (function init() {
   checkVersion();
   const code = localStorage.getItem(LS.code), c = localStorage.getItem(LS.cfg);
-  if (code && c) { cfg = JSON.parse(c); goHome(); login(code, true); } // ใช้ข้อมูลเดิมก่อน แล้วรีเฟรชรายการสินค้าเบื้องหลัง
+  if (code && c) { cfg = JSON.parse(c); goHome(); busy(true, 'กำลังโหลด...'); login(code, true).finally(() => busy(false)); } // ใช้ข้อมูลเดิมก่อน แล้วรีเฟรชรายการสินค้าเบื้องหลัง
   else show('sLogin');
 })();
 </script>
