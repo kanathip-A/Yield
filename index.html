@@ -363,7 +363,7 @@
 </main>
 <div class="modal" id="cntModal"><div class="card">
   <p class="stepttl" id="cntTitle">รอบนี้มีกี่ฟิลเลย์?</p>
-  <p class="mut">เลือกก่อนเริ่มถ่ายรูป (สูงสุด 6 ฟิลเลย์)</p>
+  <p class="mut" id="cntSub"></p>
   <div class="stepper" style="justify-content:center;margin:14px 0 18px"><button type="button" id="cntMinus">−</button><b id="cntVal" style="font-size:40px;min-width:60px">1</b><button type="button" id="cntPlus">+</button></div>
   <button class="btn" id="cntOk">เริ่มถ่ายรูป</button>
   <button class="btn ghost" id="cntCancel" style="margin-top:6px">ยกเลิก</button>
@@ -541,7 +541,7 @@ function askCount(title, init) {
   return new Promise(res => {
     let n = init || 1;
     const paint = () => { $('cntVal').textContent = n; };
-    $('cntTitle').textContent = title; paint();
+    $('cntTitle').textContent = title; $('cntSub').textContent = `เลือกก่อนเริ่มถ่ายรูป (สูงสุด ${MAX_FILLET} ฟิลเลย์)`; paint();
     $('cntMinus').onclick = () => { n = Math.max(1, n - 1); paint(); };
     $('cntPlus').onclick = () => { n = Math.min(MAX_FILLET, n + 1); paint(); };
     const close = v => { $('cntModal').classList.remove('on'); res(v); };
@@ -973,6 +973,8 @@ function calcSum(rows) {
   return { n, nf, sb, sa, sw, y: sb ? sa / sb * 100 : 0, w: sb ? sw / sb * 100 : 0, l: sb ? (sb - sa - sw) / sb * 100 : 0,
     min: n ? Math.min(...rows.map(r => r.yieldPct)) : 0, max: n ? Math.max(...rows.map(r => r.yieldPct)) : 0 };
 }
+/** ชื่อขั้นตอนของสินค้า เช่น หนังเทา / เนื้อพร้อมใช้ */
+const stepNames = name => { const p = cfg && cfg.products.find(x => x.name === name); return p ? p.steps : ['ป้ายล็อต', 'เศษ', 'เนื้อพร้อมใช้']; };
 /** แยกตามสินค้า → [[ชื่อสินค้า, rows], ...] */
 function byProduct(rows) {
   const g = {}; rows.forEach(r => (g[r.product] = g[r.product] || []).push(r));
@@ -990,18 +992,18 @@ function renderSummary() {
   if (!SUM.rows.length) { $('sumCards').innerHTML = '<div class="card"><p class="mut" style="margin:0">ไม่มีข้อมูลในช่วงนี้</p></div>'; $('sumList').innerHTML = ''; return; }
   const prods = byProduct(SUM.rows);
   $('sumCards').innerHTML = prods.map(([name, rows]) => {
-    const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+    const k = calcSum(rows), { byBranch, groups } = groupRows(rows), nm = stepNames(name);
     return `<div class="card">
       <p class="stepttl" style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="ic" style="font-size:24px">${prodIcon(name)}</span>${esc(name)}</p>
       <div class="kpi">
         <div class="big"><span class="mut">Yield รวม</span><b>${f2(k.y)}%</b><span class="mut">ต่ำสุด ${f2(k.min)}% • สูงสุด ${f2(k.max)}%</span></div>
         <div><span class="mut">จำนวน</span><b>${k.n} รอบ</b><span class="mut">${k.nf} ฟิลเลย์</span></div>
-        <div><span class="mut">น้ำหนักก่อน → หลัง</span><b style="font-size:17px">${f2(k.sb)} → ${f2(k.sa)} kg</b></div>
-        <div><span class="mut">เศษ</span><b>${f2(k.w)}%</b></div>
+        <div><span class="mut">ฟิลเลย์ (ป้าย) → ${esc(nm[2])}</span><b style="font-size:17px">${fmtKg(k.sb)} → ${fmtKg(k.sa)} kg</b></div>
+        <div><span class="mut">${esc(nm[1])}</span><b>${f2(k.w)}%</b></div>
         <div><span class="mut">Loss</span><b class="${k.l > 5 ? 'bad' : ''}">${f2(k.l)}%</b></div>
       </div>
       <label>${byBranch ? 'แยกตามสาขา' : 'แยกตามวัน'}</label>
-      <table class="t"><tr><th>${byBranch ? 'สาขา' : 'วันที่'}</th><th class="n">รอบ (ฟิลเลย์)</th><th class="n">Yield</th><th class="n">เศษ</th><th class="n">Loss</th></tr>
+      <table class="t"><tr><th>${byBranch ? 'สาขา' : 'วันที่'}</th><th class="n">รอบ (ฟิลเลย์)</th><th class="n">Yield</th><th class="n">${esc(nm[1])}</th><th class="n">Loss</th></tr>
       ${groups.map(([key, rs]) => { const c = calcSum(rs); return `<tr><td>${byBranch ? key : thDate(key)}</td><td class="n">${c.n} (${c.nf})</td><td class="n"><b>${f2(c.y)}%</b></td><td class="n">${f2(c.w)}%</td><td class="n ${c.l > 5 ? 'bad' : ''}">${f2(c.l)}%</td></tr>`; }).join('')}
       </table></div>`;
   }).join('');
@@ -1010,15 +1012,15 @@ function renderSummary() {
       <img loading="lazy" src="${r.fileId ? `https://drive.google.com/thumbnail?id=${r.fileId}&sz=w200` : ''}" alt="">
       <div class="info"><b>${esc(r.branch)}</b>${r.round ? ' • รอบที่ ' + r.round : ''} • ${r.filletCount || 1} ฟิลเลย์<br>
       <span class="mut">${thDate(r.date)} ${r.time} • ${esc(r.employee)}</span><br>
-      <span class="mut">เศษ ${f2(r.wastePct)}% • <span class="${r.lossPct > 5 ? 'bad' : ''}">Loss ${f2(r.lossPct)}%</span></span></div>
+      <span class="mut">${esc(stepNames(r.product)[1])} ${f2(r.wastePct)}% • <span class="${r.lossPct > 5 ? 'bad' : ''}">Loss ${f2(r.lossPct)}%</span></span></div>
       <div class="y">${f2(r.yieldPct)}%</div></a>`).join('')).join('');
 }
 function summaryText() {
   let t = `📊 สรุป Yield\n${SUM.branch} • ${periodText()}\n`;
   byProduct(SUM.rows).forEach(([name, rows]) => {
-    const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+    const k = calcSum(rows), { byBranch, groups } = groupRows(rows), nm = stepNames(name);
     t += `\n${prodIcon(name)} ${name}\n━━━━━━━━━━\n`;
-    t += `จำนวน ${k.n} รอบ (${k.nf} ฟิลเลย์)\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\nเศษ ${f2(k.w)}% • Loss ${f2(k.l)}%\nน้ำหนัก ${f2(k.sb)} → ${f2(k.sa)} kg\n`;
+    t += `จำนวน ${k.n} รอบ (${k.nf} ฟิลเลย์)\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\n${nm[1]} ${f2(k.w)}% • Loss ${f2(k.l)}%\nฟิลเลย์ (ป้าย) ${fmtKg(k.sb)} kg → ${nm[2]} ${fmtKg(k.sa)} kg\n`;
     if (groups.length > 1) { t += `${byBranch ? 'แยกสาขา' : 'แยกวัน'}:\n`; groups.forEach(([key, rs]) => { const c = calcSum(rs); t += `• ${byBranch ? key : thDate(key)}: ${c.n} รอบ (${c.nf} ฟิลเลย์) | Yield ${f2(c.y)}% | Loss ${f2(c.l)}%\n`; }); }
   });
   return t;
@@ -1056,7 +1058,7 @@ function summaryImage() {
       c.textAlign = 'left'; y += 30;
     };
     byProduct(SUM.rows).forEach(([name, rows]) => {
-      const k = calcSum(rows), { byBranch, groups } = groupRows(rows);
+      const k = calcSum(rows), { byBranch, groups } = groupRows(rows), nm = stepNames(name);
       // หัวข้อสินค้า
       box(50, y, 980, 64, 'rgba(31,111,92,.12)');
       c.fillStyle = '#1f6f5c'; c.font = `bold 36px ${F}`; c.fillText(`${prodIcon(name)}  ${name}`, 74, y + 45, 920); y += 84;
@@ -1065,16 +1067,16 @@ function summaryImage() {
       c.font = `bold 72px ${F}`; c.fillText(f2(k.y) + '%', 80, y + 120);
       c.font = `26px ${F}`; c.textAlign = 'right'; c.fillText(`${k.n} รอบ • ${k.nf} ฟิลเลย์`, 1000, y + 42);
       c.fillText(`ต่ำสุด ${f2(k.min)}%  สูงสุด ${f2(k.max)}%`, 1000, y + 120); c.textAlign = 'left'; y += 170;
-      [['เศษ', f2(k.w) + '%'], ['Loss', f2(k.l) + '%'], ['ก่อน → หลัง', `${f2(k.sb)} → ${f2(k.sa)} kg`]].forEach(([l, v], i) => {
+      [[nm[1], f2(k.w) + '%'], ['Loss', f2(k.l) + '%'], [`ฟิลเลย์ → ${nm[2]}`, `${fmtKg(k.sb)} → ${fmtKg(k.sa)} kg`]].forEach(([l, v], i) => {
         const x = 50 + i * 330; box(x, y, 310, 100, 'rgba(255,255,255,.75)');
         c.fillStyle = '#4e6660'; c.font = `24px ${F}`; c.fillText(l, x + 24, y + 36);
         c.fillStyle = l === 'Loss' && k.l > 5 ? '#c0392b' : '#16302a'; c.font = `bold ${i === 2 ? 30 : 38}px ${F}`; c.fillText(v, x + 24, y + 82);
       });
       y += 140;
-      if (groups.length > 1) table(byBranch ? 'แยกตามสาขา' : 'แยกตามวัน', [byBranch ? 'สาขา' : 'วันที่', 'Yield', 'เศษ', 'Loss'],
+      if (groups.length > 1) table(byBranch ? 'แยกตามสาขา' : 'แยกตามวัน', [byBranch ? 'สาขา' : 'วันที่', 'Yield', nm[1], 'Loss'],
         groups.map(([key, rs]) => { const s2 = calcSum(rs); return [`${byBranch ? key : thDate(key)}  (${s2.n} รอบ / ${s2.nf} ฟิลเลย์)`, f2(s2.y) + '%', f2(s2.w) + '%', f2(s2.l) + '%']; }));
       const list = rows.slice().reverse().slice(0, 15);
-      table(`รายการ${rows.length > 15 ? ' (15 ล่าสุด)' : ''}`, ['สาขา / เวลา / พนักงาน', 'Yield', 'เศษ', 'Loss'],
+      table(`รายการ${rows.length > 15 ? ' (15 ล่าสุด)' : ''}`, ['สาขา / เวลา / พนักงาน', 'Yield', nm[1], 'Loss'],
         list.map(r => [`${r.branch} ${r.date.slice(8)}/${r.date.slice(5, 7)} ${r.time} ${r.employee}${r.round ? ' รอบ ' + r.round : ''} (${r.filletCount || 1} ฟิลเลย์)`, f2(r.yieldPct) + '%', f2(r.wastePct) + '%', f2(r.lossPct) + '%']));
       y += 10;
     });
