@@ -87,6 +87,7 @@
   .stepper b{font-size:28px;min-width:30px;text-align:center}
   .fhead,.frow{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center}
   .modal .card{max-height:88vh;overflow:auto}
+  .modesw{margin-bottom:10px}
   .wtimg{width:100%;max-height:200px;object-fit:contain;border-radius:12px;background:rgba(0,0,0,.05);margin-bottom:10px}
   .fhead{font-size:13px;color:var(--mut);margin:4px 0 6px}
   .frow{margin-bottom:8px}
@@ -225,6 +226,11 @@
     <div class="field"><label>ชื่อพนักงาน</label><input id="inName" placeholder="พิมพ์ชื่อ"></div>
     <div class="field" style="margin:0"><label>สาขา</label><select id="inBranch"></select></div>
   </div>
+  <div class="card" id="draftCard" style="display:none;border-color:rgba(242,106,61,.6)">
+    <label>📌 มีรอบที่ทำค้างไว้</label>
+    <p id="draftInfo" style="margin:0 0 12px;font-weight:600"></p>
+    <div class="row"><button class="btn" id="draftGo">ทำต่อ</button><button class="btn sec" id="draftDel">ทิ้ง</button></div>
+  </div>
   <div class="card">
     <label>1. เลือกรายการสินค้า</label>
     <div class="field"><input id="inSearch" placeholder="ค้นหา..."></div>
@@ -251,12 +257,13 @@
       <button class="btn" id="btnCam">📷 ถ่ายรูป</button>
       <button class="btn sec" id="btnGal">🖼 แกลเลอรี</button>
     </div>
+    <p class="mut" id="galHint" style="margin:8px 0 0;text-align:center"></p>
     <div class="row" style="margin-top:10px">
       <button class="btn ghost" id="btnSkip">ข้ามขั้นนี้</button>
       <button class="btn sec" id="btnNext">ถัดไป →</button>
     </div>
     <input type="file" id="fCam" accept="image/*" capture="environment">
-    <input type="file" id="fGal" accept="image/*">
+    <input type="file" id="fGal" accept="image/*" multiple>
   </div>
 </section>
 
@@ -389,8 +396,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.2.0';
 const CHANGELOG = {
+  '2.2.0': ['เลือกรูปจากแกลเลอรีได้หลายรูปในครั้งเดียว แอปเรียงให้ตามลำดับ ป้ายล็อต → หนังเทา → เนื้อพร้อมใช้', 'เวลาบนรูปอ่านจากเวลาถ่ายจริงในไฟล์รูป', 'ปิดแอปกลางคันได้ รอบที่ทำค้างจะเก็บไว้ในเครื่อง เปิดมาทำต่อได้', 'ฟิลเลย์ได้สูงสุด 15 ชิ้น และกรอกน้ำหนักป้ายเป็นยอดรวมได้', 'กันบันทึกซ้ำ และแอปอัปเดตเป็นเวอร์ชันล่าสุดเอง'],
   '2.1.0': ['เลือกจำนวนฟิลเลย์ก่อนเริ่มถ่ายรูป', 'ถ่ายหรือเลือกรูปเสร็จ จะมีหน้าต่างให้กรอกน้ำหนักของรูปนั้นทันที', 'น้ำหนักฟิลเลย์ใช้ตามป้ายล็อตอย่างเดียว ส่วนหนังเทากับเนื้อพร้อมใช้ใช้น้ำหนักชั่งจริง', 'เช็กตราชั่งก่อนกรอกน้ำหนักหนังเทาของแต่ละรอบ'],
   '2.0.0': ['นับเป็น "รอบที่" แทน "ฟิลเลย์ที่" เลขรอบออกจาก Sheet จึงไม่ซ้ำกันแม้ใช้หลายเครื่อง', 'ระบุจำนวนฟิลเลย์ต่อรอบได้ สูงสุด 6 ฟิลเลย์ แล้วกรอกน้ำหนักตามป้ายกับชั่งจริงแยกทีละฟิลเลย์', 'น้ำหนักใช้ kg อย่างเดียว ก่อนกรอกจะมีหน้าต่างให้เช็กตราชั่งทุกรอบ', 'ต้องถ่ายครบ 3 รูป: ป้ายล็อต (ทุกฟิลเลย์ในรูปเดียว) หนังเทา และเนื้อพร้อมใช้', 'คอลลาจบอกรอบ จำนวนฟิลเลย์ น้ำหนักแต่ละฟิลเลย์ หนังเทา และ Loss เป็น kg'],
   '1.4.0': ['เลือกหน่วย kg หรือ g ได้ทีละช่องน้ำหนัก ไม่ต้องใช้หน่วยเดียวกันทั้งหมด', 'ระหว่างรอโหลดจะมีแซลมอนกระโดดให้ดู'],
@@ -486,7 +494,7 @@ function renderToday() {
 }
 
 /* ---------- home ---------- */
-function goHome() { renderHome(); show('sHome', 'Yield Record', { text: 'ออก', fn: () => logout() }); }
+function goHome() { if (pendingVer) return doUpdate(pendingVer); renderHome(); checkDraft(); show('sHome', 'Yield Record', { text: 'ออก', fn: () => logout() }); }
 function renderHome() {
   $('inName').value = localStorage.getItem(LS.name) || $('inName').value;
   const sel = $('inBranch'), saved = localStorage.getItem(LS.branch);
@@ -527,7 +535,7 @@ async function nextRound(branch, product) {
   return (TODAY[product] ? TODAY[product].r : 0) + 1;
 }
 const capTitle = () => `${S.product} • รอบที่ ${S.round} • ${S.w ? S.w.n : S.n} ฟิลเลย์`;
-const cancelBtn = () => ({ text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรอบนี้?')) goHome(); } });
+const cancelBtn = () => ({ text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรอบนี้? รูปและน้ำหนักที่กรอกไว้จะหายหมด')) { S = null; clearDraft(); goHome(); } } });
 /** หน้าต่างเลือกจำนวนฟิลเลย์ คืนค่า null ถ้ายกเลิก */
 function askCount(title, init) {
   return new Promise(res => {
@@ -543,6 +551,9 @@ function askCount(title, init) {
   });
 }
 async function startRecord(p) {
+  if (pendingVer) return doUpdate(pendingVer);
+  let old = null; try { old = await IDB.get('draft'); } catch (_) {}
+  if (old && !confirm('มีรอบที่ทำค้างไว้ เริ่มรอบใหม่แล้วรอบที่ค้างจะหายไป ต้องการเริ่มใหม่หรือไม่?')) return;
   const branch = $('inBranch').value;
   busy(true, 'กำลังเตรียมรอบใหม่...');
   const round = await nextRound(branch, p.name);
@@ -552,10 +563,12 @@ async function startRecord(p) {
   S = {
     prod: p, round, n, product: p.name, employee: $('inName').value.trim(), branch,
     steps: p.steps.map((l, i) => ({ label: l, role: ROLES[i] })), photos: [], idx: 0, scaleOk: false, form: null,
-    w: { n, lab: [], waste: '', after: '' }
+    w: { n, mode: 'each', lab: [], total: '', waste: '', after: '' },
+    cid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
   };
   renderCap();
   show('sCap', capTitle(), cancelBtn());
+  saveDraft();
 }
 function renderCap() {
   const st = S.steps[S.idx], ph = S.photos[S.idx];
@@ -566,6 +579,8 @@ function renderCap() {
   $('btnCam').textContent = ph ? '📷 ถ่ายใหม่' : '📷 ถ่ายรูป';
   $('btnSkip').style.display = 'none';
   $('btnNext').style.display = ph ? '' : 'none';
+  const left = S.steps.length - S.idx;
+  $('galHint').textContent = left > 1 ? `เลือกจากแกลเลอรีได้หลายรูป เรียงตามนี้: ${S.steps.slice(S.idx).map(x => x.label).join(' → ')}` : '';
   $('stepBar').innerHTML = S.steps.map((s, i) => {
     const p = S.photos[i];
     return `<div data-i="${i}" class="${i === S.idx ? 'cur' : ''} ${p ? '' : 'empty'}" style="${p ? `background-image:url(${p.stamped})` : ''}">${esc(s.label)}</div>`;
@@ -580,19 +595,23 @@ $('btnNext').onclick = nextStep;
 $('btnSkip').onclick = () => { S.photos[S.idx] = null; nextStep(); };
 
 async function onFile(e, src) {
-  const file = e.target.files[0]; e.target.value = '';
-  if (!file) return;
+  const files = [...e.target.files]; e.target.value = '';
+  if (!files.length) return;
+  // รูปแรกลงช่องปัจจุบัน รูปถัดไปลงช่องถัดไปตามลำดับ
+  const targets = [];
+  for (let i = S.idx; i < S.steps.length && targets.length < files.length; i++) targets.push(i);
   busy(true, 'กำลังประมวลผลรูป...');
   try {
-    const st = S.steps[S.idx];
-    S.photos[S.idx] = await processPhoto(file, st.label, src);
-    renderCap();
+    for (let k = 0; k < targets.length; k++) S.photos[targets[k]] = await processPhoto(files[k], S.steps[targets[k]].label, src);
     busy(false);
-    await askWeight(S.idx); // ถ่ายเสร็จให้กรอกน้ำหนักของรูปนั้นทันที
+    touchDraft();
+    if (files.length > targets.length) alert(`เลือกมา ${files.length} รูป ใช้ได้ ${targets.length} รูป (ที่เหลือเกินจำนวนช่อง)`);
+    for (const i of targets) { S.idx = i; renderCap(); await askWeight(i); touchDraft(); }
     nextStep();
   } catch (err) { busy(false); alert('อ่านรูปไม่ได้: ' + err.message); }
 }
 function nextStep() {
+  touchDraft();
   // หาขั้นถัดไปที่ยังไม่มีรูป (นับจากตำแหน่งปัจจุบัน)
   for (let i = S.idx + 1; i < S.steps.length; i++) if (!S.photos[i]) { S.idx = i; renderCap(); return; }
   for (let i = 0; i < S.steps.length; i++) if (!S.photos[i]) { S.idx = i; renderCap(); return; }
@@ -607,17 +626,51 @@ function loadImg(file) {
     img.src = url;
   });
 }
-async function processPhoto(file, label, src) {
-  const img = await loadImg(file);
-  const max = 1600, sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-  const w = Math.round(img.naturalWidth * sc), h = Math.round(img.naturalHeight * sc);
+const srcNote = src => src === 'gallery' ? ' (แกลเลอรี)' : src === 'exif' ? ' (เวลาถ่ายในรูป)' : '';
+function makePhoto(img, label, ts, src, rawData) {
+  const max = 1600, sc = Math.min(1, max / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
+  const w = Math.round((img.naturalWidth || img.width) * sc), h = Math.round((img.naturalHeight || img.height) * sc);
   const raw = document.createElement('canvas'); raw.width = w; raw.height = h;
   raw.getContext('2d').drawImage(img, 0, 0, w, h);
-  const ts = src === 'camera' ? new Date() : new Date(file.lastModified || Date.now());
   const st = document.createElement('canvas'); st.width = w; st.height = h;
   const c = st.getContext('2d'); c.drawImage(raw, 0, 0);
-  drawStamp(c, 0, 0, w, h, label, fmtDT(ts) + (src === 'gallery' ? ' (แกลเลอรี)' : ''));
-  return { raw, stamped: st.toDataURL('image/jpeg', 0.85), ts, src, label };
+  drawStamp(c, 0, 0, w, h, label, fmtDT(ts) + srcNote(src));
+  return { raw, rawData, stamped: st.toDataURL('image/jpeg', 0.85), ts, src, label };
+}
+async function processPhoto(file, label, src) {
+  const img = await loadImg(file);
+  let ts = null;
+  if (src === 'camera') ts = new Date();
+  else { const ex = await exifDate(file); if (ex) { ts = ex; src = 'exif'; } else ts = new Date(file.lastModified || Date.now()); }
+  return makePhoto(img, label, ts, src);
+}
+/** อ่านเวลาถ่ายจริง (DateTimeOriginal) จากข้อมูล EXIF ของไฟล์ JPEG */
+async function exifDate(file) {
+  try {
+    const buf = await file.slice(0, 256 * 1024).arrayBuffer(), v = new DataView(buf);
+    if (v.byteLength < 4 || v.getUint16(0) !== 0xFFD8) return null;
+    let o = 2;
+    while (o + 10 < v.byteLength) {
+      const mk = v.getUint16(o), len = v.getUint16(o + 2);
+      if (mk === 0xFFE1 && v.getUint32(o + 4) === 0x45786966) {
+        const t = o + 10, le = v.getUint16(t) === 0x4949;
+        const u16 = p => v.getUint16(t + p, le), u32 = p => v.getUint32(t + p, le);
+        const str = (p, n) => { let x = ''; for (let i = 0; i < n && t + p + i < v.byteLength; i++) { const ch = v.getUint8(t + p + i); if (!ch) break; x += String.fromCharCode(ch); } return x; };
+        const find = (off, tags) => { const n = u16(off); for (let i = 0; i < n; i++) { const e = off + 2 + i * 12; if (tags.includes(u16(e))) return u32(e + 8); } return null; };
+        const ifd0 = u32(4), exifIfd = find(ifd0, [0x8769]);
+        let p = exifIfd != null ? find(exifIfd, [0x9003, 0x9004]) : null;
+        if (p == null) p = find(ifd0, [0x0132]);
+        if (p == null) return null;
+        const m = str(p, 19).match(/(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)/);
+        if (!m) return null;
+        const d = new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+        return isNaN(d) ? null : d;
+      }
+      if ((mk & 0xFF00) !== 0xFF00) break;
+      o += 2 + len;
+    }
+  } catch (_) {}
+  return null;
 }
 function drawStamp(c, x, y, w, h, label, time) {
   const fs = Math.max(14, Math.round(Math.min(w, h) * 0.045)), bh = fs * 2.9;
@@ -631,17 +684,22 @@ function drawStamp(c, x, y, w, h, label, time) {
 }
 
 /* ---------- น้ำหนัก (kg เท่านั้น) ---------- */
-const MAX_FILLET = 6;
+const MAX_FILLET = 15;
 const r3 = v => Math.round(v * 1000) / 1000;
 const fmtKg = v => { const t = r3(v).toFixed(3); return t.endsWith('0') ? (+t).toFixed(2) : t; };
 const numIn = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? r3(n) : 0; };
-/** ฟอร์มน้ำหนัก: จำนวนฟิลเลย์ + น้ำหนักตามป้ายทีละฟิลเลย์ + หนังเทา + เนื้อพร้อมใช้ (ชั่งจริง) */
+/** ฟอร์มน้ำหนัก: จำนวนฟิลเลย์ + น้ำหนักตามป้าย (แยกหรือรวม) + หนังเทา + เนื้อพร้อมใช้ (ชั่งจริง) */
+const modeSw = mode => `<div class="unit modesw"><button type="button" data-m="each" class="${mode !== 'total' ? 'on' : ''}">แยกทีละฟิลเลย์</button><button type="button" data-m="total" class="${mode === 'total' ? 'on' : ''}">ยอดรวม</button></div>`;
+const labRows = (st, n) => st.mode === 'total'
+  ? `<div class="frow"><span>รวม ${n} ฟิลเลย์</span><input data-t="1" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.total || '')}"></div>`
+  : Array.from({ length: n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span><input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.lab[i] || '')}"></div>`).join('');
 function WForm(root, names, onChange) {
-  const st = { n: 1, lab: [], waste: '', after: '' };
+  const st = { n: 1, mode: 'each', lab: [], total: '', waste: '', after: '' };
   root.innerHTML = `
     <div class="field"><label>จำนวนฟิลเลย์ในรอบนี้</label>
       <div class="stepper"><button type="button" data-d="-1">−</button><b class="cnt"></b><button type="button" data-d="1">+</button><span class="mut">สูงสุด ${MAX_FILLET} ฟิลเลย์</span></div></div>
     <label>น้ำหนักฟิลเลย์ตามป้ายล็อต (kg)</label>
+    <div class="msw"></div>
     <div class="flist"></div>
     <div class="field"><label>น้ำหนัก${esc(names[1])} ชั่งจริง (kg)</label><input class="iw" type="text" inputmode="decimal" placeholder="0.000"></div>
     <div class="field"><label>น้ำหนัก${esc(names[2])} ชั่งจริง (kg)</label><input class="ia" type="text" inputmode="decimal" placeholder="0.000"></div>
@@ -653,13 +711,10 @@ function WForm(root, names, onChange) {
     </div>
     <p class="warn"></p>`;
   const q = sel => root.querySelector(sel);
-  function rows() {
-    q('.cnt').textContent = st.n;
-    q('.flist').innerHTML = Array.from({ length: st.n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span>
-      <input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.lab[i] || '')}"></div>`).join('');
-  }
+  function rows() { q('.cnt').textContent = st.n; q('.msw').innerHTML = modeSw(st.mode); q('.flist').innerHTML = labRows(st, st.n); }
   q('.stepper').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; st.n = Math.min(MAX_FILLET, Math.max(1, st.n + +b.dataset.d)); rows(); upd(); };
-  q('.flist').oninput = e => { const t = e.target; if (t.dataset.i == null) return; st.lab[+t.dataset.i] = t.value; upd(); };
+  q('.msw').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; st.mode = b.dataset.m; rows(); upd(); };
+  q('.flist').oninput = e => { const t = e.target; if (t.dataset.t) st.total = t.value; else if (t.dataset.i != null) st.lab[+t.dataset.i] = t.value; upd(); };
   q('.iw').oninput = e => { st.waste = e.target.value; upd(); };
   q('.ia').oninput = e => { st.after = e.target.value; upd(); };
   function get() { return calcW(st, names); }
@@ -675,10 +730,10 @@ function WForm(root, names, onChange) {
   rows();
   return {
     get, refresh: upd,
-    state: () => ({ n: st.n, lab: st.lab.slice(0, st.n), waste: st.waste, after: st.after }),
+    state: () => ({ n: st.n, mode: st.mode, lab: st.lab.slice(0, st.n), total: st.total, waste: st.waste, after: st.after }),
     set(d) {
-      st.n = Math.min(MAX_FILLET, Math.max(1, d.n || 1));
-      st.lab = (d.lab || []).map(x => x === 0 || x ? String(x) : '');
+      st.n = Math.min(MAX_FILLET, Math.max(1, d.n || 1)); st.mode = d.mode === 'total' ? 'total' : 'each';
+      st.lab = (d.lab || []).map(x => x === 0 || x ? String(x) : ''); st.total = d.total === 0 || d.total ? String(d.total) : '';
       st.waste = d.waste === '' || d.waste == null ? '' : String(d.waste); st.after = d.after ? String(d.after) : '';
       q('.iw').value = st.waste; q('.ia').value = st.after; rows(); upd();
     }
@@ -686,19 +741,20 @@ function WForm(root, names, onChange) {
 }
 /** คำนวณจากค่าที่กรอก (ข้อความ) */
 function calcW(st, names) {
-  const lab = [];
-  for (let i = 0; i < st.n; i++) lab.push(numIn(st.lab[i] || ''));
-  const before = r3(lab.reduce((a, b) => a + b, 0));
+  const each = st.mode !== 'total', lab = [];
+  if (each) for (let i = 0; i < st.n; i++) lab.push(numIn(st.lab[i] || ''));
+  const before = each ? r3(lab.reduce((a, b) => a + b, 0)) : numIn(st.total);
   const waste = numIn(st.waste), after = numIn(st.after), loss = r3(before - waste - after);
-  const complete = lab.every(v => v > 0) && String(st.waste).trim() !== '' && after > 0;
+  const complete = (each ? lab.every(v => v > 0) : before > 0) && String(st.waste).trim() !== '' && after > 0;
   const odd = [];
-  lab.forEach((v, i) => { if (v && (v > 10 || v < 0.1)) odd.push(`ฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
+  if (each) lab.forEach((v, i) => { if (v && (v > 5 || v < 0.1)) odd.push(`ฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
+  else if (before && (before / st.n > 5 || before / st.n < 0.1)) odd.push(`ยอดรวม ${fmtKg(before)} kg (เฉลี่ย ${fmtKg(before / st.n)} kg ต่อฟิลเลย์)`);
   if (waste > 10) odd.push(`${names[1]} = ${fmtKg(waste)} kg`);
-  if (after > 60) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
+  if (after > 75) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
   const warn = [];
-  if (odd.length) warn.push('⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า: ' + odd.join(', '));
+  if (odd.length) warn.push('⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือนับฟิลเลย์ผิดหรือเปล่า: ' + odd.join(', '));
   if (before > 0 && after > 0 && loss < -0.0005) warn.push(`⚠️ ${names[1]}รวมกับ${names[2]}หนักกว่าน้ำหนักฟิลเลย์ตามป้าย ลองเช็กอีกครั้ง`);
-  return { n: st.n, lab, act: [], before, labelTotal: before, waste, after, loss, unit: 'kg', complete, odd, warn,
+  return { n: st.n, mode: each ? 'each' : 'total', lab, act: [], before, labelTotal: before, waste, after, loss, unit: 'kg', complete, odd, warn,
     yieldPct: before ? after / before * 100 : 0, wastePct: before ? waste / before * 100 : 0, lossPct: before ? loss / before * 100 : 0 };
 }
 /** หน้าต่างกรอกน้ำหนักหลังถ่ายรูปแต่ละใบ */
@@ -707,29 +763,41 @@ async function askWeight(idx) {
   if (idx >= 1 && !S.scaleOk) { await scaleCheck(); S.scaleOk = true; } // ชั่งจริงเริ่มที่หนังเทา
   return new Promise(res => {
     $('wtImg').src = S.photos[idx] ? S.photos[idx].stamped : '';
-    const one = (cls, val) => `<div class="field"><input class="${cls}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(val || '')}"></div>`;
-    if (idx === 0) {
-      $('wtTitle').textContent = `น้ำหนักตามป้ายล็อต (kg) • ${w.n} ฟิลเลย์`;
-      $('wtFields').innerHTML = Array.from({ length: w.n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span><input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(w.lab[i] || '')}"></div>`).join('');
-    } else {
-      $('wtTitle').textContent = `น้ำหนัก${names[idx]} ชั่งจริง (kg)`;
-      $('wtFields').innerHTML = one('wv', idx === 1 ? w.waste : w.after);
-    }
+    const paint = () => {
+      if (idx === 0) {
+        $('wtTitle').textContent = `น้ำหนักตามป้ายล็อต (kg) • ${w.n} ฟิลเลย์`;
+        $('wtFields').innerHTML = modeSw(w.mode) + labRows(w, w.n);
+      } else {
+        $('wtTitle').textContent = `น้ำหนัก${names[idx]} ชั่งจริง (kg)`;
+        $('wtFields').innerHTML = `<div class="field"><input class="wv" type="text" inputmode="decimal" placeholder="0.000" value="${esc((idx === 1 ? w.waste : w.after) || '')}"></div>`;
+      }
+    };
     const read = () => {
-      if (idx === 0) $('wtFields').querySelectorAll('[data-i]').forEach(el => w.lab[+el.dataset.i] = el.value);
-      else if (idx === 1) w.waste = $('wtFields').querySelector('.wv').value;
+      if (idx === 0) {
+        const t = $('wtFields').querySelector('[data-t]'); if (t) w.total = t.value;
+        $('wtFields').querySelectorAll('[data-i]').forEach(el => w.lab[+el.dataset.i] = el.value);
+      } else if (idx === 1) w.waste = $('wtFields').querySelector('.wv').value;
       else w.after = $('wtFields').querySelector('.wv').value;
     };
     const check = () => {
       read();
-      let vals = idx === 0 ? w.lab.slice(0, w.n).map(numIn) : [numIn(idx === 1 ? w.waste : w.after)];
-      if (idx === 0) while (vals.length < w.n) vals.push(0);
-      const filled = idx === 1 ? String(w.waste).trim() !== '' : vals.every(v => v > 0);
-      const lim = idx === 2 ? 60 : 10, odd = vals.filter(v => v && (v > lim || (idx === 0 && v < 0.1)));
-      $('wtWarn').textContent = odd.length ? '⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
+      let filled, odd = false;
+      if (idx === 0) {
+        const tot = w.mode === 'total', vals = tot ? [numIn(w.total)] : Array.from({ length: w.n }, (_, i) => numIn(w.lab[i] || ''));
+        filled = vals.every(v => v > 0);
+        odd = tot ? vals[0] > 0 && (vals[0] / w.n > 5 || vals[0] / w.n < 0.1) : vals.some(v => v && (v > 5 || v < 0.1));
+      } else {
+        const raw = idx === 1 ? w.waste : w.after, v = numIn(raw);
+        filled = idx === 1 ? String(raw).trim() !== '' : v > 0;
+        odd = v > (idx === 1 ? 10 : 75);
+      }
+      $('wtWarn').textContent = odd ? '⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
       $('wtOk').disabled = !filled;
     };
-    $('wtFields').oninput = check; check();
+    paint();
+    $('wtFields').oninput = check;
+    $('wtFields').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; read(); w.mode = b.dataset.m; paint(); check(); };
+    check();
     const close = () => { read(); $('wtModal').classList.remove('on'); if (S.form) S.form.set(S.w); res(); };
     $('wtOk').onclick = close; $('wtLater').onclick = close;
     $('wtModal').classList.add('on');
@@ -755,7 +823,7 @@ $('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', capTitle(
 function calc(v) {
   if (!S || !S.form) return;
   v = v || S.form.get();
-  S.w = S.form.state();
+  S.w = S.form.state(); touchDraft();
   $('btnSave').disabled = !v.complete;
   clearTimeout(collageTimer);
   collageTimer = setTimeout(() => { $('collagePrev').src = buildCollage().toDataURL('image/jpeg', 0.7); }, 250);
@@ -775,7 +843,7 @@ function drawInfo(c, y0, W, INFO, d) {
   c.font = `bold 38px ${F}`; c.fillText(`${d.product}  •  รอบที่ ${d.round}  •  ${v.n} ฟิลเลย์`, 30, y0 + 22, 790);
   c.font = `25px ${F}`;
   c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 790);
-  c.fillText(`ฟิลเลย์ (ตามป้าย) ${v.lab.map(fmtKg).join(', ')} kg  =  ${fmtKg(v.before)} kg`, 30, y0 + 125, 790);
+  c.fillText(v.mode === 'total' ? `ฟิลเลย์ ${v.n} ชิ้น  •  ยอดรวมตามป้าย ${fmtKg(v.before)} kg` : `ฟิลเลย์ (ตามป้าย) ${v.lab.map(fmtKg).join(', ')} kg  =  ${fmtKg(v.before)} kg`, 30, y0 + 125, 790);
   c.fillText(`${d.names[1]} ${fmtKg(v.waste)} kg  •  ${d.names[2]} ${fmtKg(v.after)} kg  •  Loss ${fmtKg(v.loss)} kg (${ok ? f2(v.lossPct) : '-'}%)`, 30, y0 + 170, 790);
   c.textAlign = 'right';
   c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
@@ -792,7 +860,7 @@ function buildCollage() {
   const slots = [[0, 0, W, TOP], [0, TOP + GAP, SQ - GAP / 2, SQ], [SQ + GAP / 2, TOP + GAP, SQ - GAP / 2, SQ]];
   slots.forEach(([x, y, w, h], i) => {
     const p = S.photos[i];
-    if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + (p.src === 'gallery' ? ' (แกลเลอรี)' : '')); }
+    if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + srcNote(p.src)); }
     else { c.fillStyle = '#ddd'; c.fillRect(x, y, w, h); }
   });
   drawInfo(c, TOP + GAP + SQ, W, INFO, { product: S.product, round: S.round, branch: S.branch, employee: S.employee,
@@ -801,28 +869,36 @@ function buildCollage() {
 }
 
 /* ---------- save ---------- */
+const postJSON = async body => (await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })).json();
 $('btnSave').onclick = async () => {
+  if (S.saving) return;
   const v = S.form.get();
   if (!v.complete) return;
   if (S.steps.some((_, i) => !S.photos[i])) { alert('ต้องถ่ายรูปให้ครบทุกรูปก่อนบันทึก'); return; }
   if (v.odd.length && !confirm('มีน้ำหนักที่ดูแปลก:\n' + v.odd.join('\n') + '\n\nยืนยันว่าถูกต้อง?')) return;
+  S.saving = true; $('btnSave').disabled = true;
   busy(true, 'กำลังบันทึก...');
   try {
     S.round = await nextRound(S.branch, S.product); // ขอเลขรอบล่าสุดอีกครั้งก่อนบันทึก
     const body = {
-      action: 'save', code: localStorage.getItem(LS.code),
+      action: 'save', code: localStorage.getItem(LS.code), cid: S.cid,
       branch: S.branch, employee: S.employee, product: S.product, round: S.round, appVersion: APP_VERSION,
       unit: 'kg', before: v.before, waste: v.waste, after: v.after,
       fillets: v.n, labelKg: v.lab, labelTotal: v.labelTotal,
       collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)),
-      photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${S.photos[i].src === 'gallery' ? ' (แกลเลอรี)' : ''}` : null).filter(Boolean)
+      photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${srcNote(S.photos[i].src)}` : null).filter(Boolean)
     };
-    const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
-    const res = await r.json();
+    let res = await postJSON(body);
+    if (res.dup) {
+      busy(false);
+      if (!confirm(`ตัวเลขชุดนี้ตรงกับรอบที่ ${res.round || '?'} ที่บันทึกไปแล้ววันนี้\nน่าจะเป็นการบันทึกซ้ำ ต้องการบันทึกอีกครั้งหรือไม่?`)) return;
+      busy(true, 'กำลังบันทึก...');
+      body.force = true; res = await postJSON(body);
+    }
     busy(false);
     if (!res.ok) { alert('บันทึกไม่สำเร็จ: ' + res.error); return; }
     if (res.round) S.round = res.round;
-    S.lastId = res.id;
+    S.lastId = res.id; S.done = true; clearDraft();
     $('doneInfo').textContent = `${S.product} รอบที่ ${S.round} • ${v.n} ฟิลเลย์ • ${S.branch}`;
     $('btnPiece').textContent = `+ ถ่ายรอบถัดไป: ${S.product}`;
     $('dYield').textContent = f2(res.yieldPct) + '%';
@@ -833,8 +909,8 @@ $('btnSave').onclick = async () => {
     show('sDone', 'บันทึกแล้ว');
   } catch (e) {
     busy(false);
-    alert('ส่งข้อมูลไม่สำเร็จ ลองเช็กอินเทอร์เน็ตแล้วกดบันทึกอีกครั้ง\n' + e.message);
-  }
+    alert('ส่งข้อมูลไม่สำเร็จ ลองเช็กอินเทอร์เน็ตแล้วกดบันทึกอีกครั้ง (ไม่ต้องกลัวบันทึกซ้ำ ระบบกันไว้แล้ว)\n' + e.message);
+  } finally { if (S) { S.saving = false; $('btnSave').disabled = !S.form.get().complete; } }
 };
 $('btnNew').onclick = goHome;
 $('btnPiece').onclick = () => startRecord(S.prod);
@@ -1056,7 +1132,8 @@ async function openEdit(rec) {
     $('editInfo').textContent = `${rec.product}${rec.round ? ' • รอบที่ ' + rec.round : ''} • ${thDate(rec.date)} ${rec.time}`;
     $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}" style="padding:11px">📷 ${esc(l)}</button>`).join('');
     E.form = WForm($('eForm'), E.labels, calcEdit);
-    E.form.set({ n: rec.filletCount || 1, lab: rec.labelKg && rec.labelKg.length ? rec.labelKg : [toKg(rec.before, rec.unit)],
+    const nf = rec.filletCount || 1, eachOk = rec.labelKg && rec.labelKg.length === nf;
+    E.form.set({ n: nf, mode: eachOk ? 'each' : 'total', lab: eachOk ? rec.labelKg : [], total: toKg(rec.before, rec.unit),
       waste: toKg(rec.waste, rec.unit), after: toKg(rec.after, rec.unit) });
     busy(false);
     show('sEdit', 'แก้ไขรายการ', { text: '← กลับ', fn: backToHist });
@@ -1079,7 +1156,7 @@ function buildEditCollage() {
   c.drawImage(E.base, 0, 0, CL.W, H);
   slotRects().forEach(([x, y, w, h], i) => {
     const p = E.photos[i];
-    if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + (p.src === 'gallery' ? ' (แกลเลอรี)' : '')); }
+    if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + srcNote(p.src)); }
   });
   drawInfo(c, CL.TOP + CL.GAP + CL.SQ, CL.W, CL.INFO, { product: E.rec.product, round: E.rec.round || '-', branch: E.rec.branch,
     employee: $('eName').value.trim(), when: `${thDate(E.rec.date)} ${E.rec.time} (แก้ไข ${fmtDT(new Date()).slice(0, 16)})`,
@@ -1113,6 +1190,71 @@ $('btnEditSave').onclick = async () => {
   } catch (e) { busy(false); alert('ส่งข้อมูลไม่สำเร็จ ลองเช็กอินเทอร์เน็ตแล้วกดบันทึกอีกครั้ง\n' + e.message); }
 };
 
+/* ---------- รอบที่ทำค้าง (เก็บในเครื่องด้วย IndexedDB) ---------- */
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => { const r = indexedDB.open('yield-record', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => { this.db = r.result; res(this.db); }; r.onerror = () => rej(r.error); });
+  },
+  async run(mode, fn) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }); },
+  get: k => IDB.run('readonly', st => st.get(k)), put: (k, v) => IDB.run('readwrite', st => st.put(v, k)), del: k => IDB.run('readwrite', st => st.delete(k))
+};
+let draftTimer;
+function touchDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 400); }
+async function saveDraft() {
+  if (!S || S.done) return;
+  try {
+    await IDB.put('draft', {
+      v: 1, at: Date.now(), code: localStorage.getItem(LS.code), prod: S.prod, round: S.round, n: S.n, cid: S.cid,
+      employee: S.employee, branch: S.branch, steps: S.steps, idx: S.idx, scaleOk: S.scaleOk, w: S.w,
+      photos: S.steps.map((_, i) => { const p = S.photos[i]; return p ? { raw: p.rawData || (p.rawData = p.raw.toDataURL('image/jpeg', 0.85)), ts: +p.ts, src: p.src, label: p.label } : null; })
+    });
+  } catch (_) {}
+}
+const clearDraft = () => IDB.del('draft').catch(() => {});
+async function checkDraft() {
+  let d = null; try { d = await IDB.get('draft'); } catch (_) {}
+  if (!d || d.code !== localStorage.getItem(LS.code)) { $('draftCard').style.display = 'none'; return; }
+  const got = d.photos.filter(Boolean).length;
+  $('draftInfo').textContent = `${d.prod.name} รอบที่ ${d.round} • ${d.w.n} ฟิลเลย์ • สาขา ${d.branch} • ถ่ายแล้ว ${got}/${d.steps.length} รูป`;
+  $('draftCard').style.display = '';
+  $('draftGo').onclick = () => resumeDraft(d);
+  $('draftDel').onclick = () => { if (confirm('ทิ้งรอบที่ทำค้างไว้?')) { clearDraft(); $('draftCard').style.display = 'none'; } };
+}
+async function resumeDraft(d) {
+  busy(true, 'กำลังเปิดรอบที่ค้างไว้...');
+  try {
+    const photos = await Promise.all(d.photos.map(async p => {
+      if (!p) return null;
+      const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('รูปเสีย')); im.src = p.raw; });
+      return makePhoto(img, p.label, new Date(p.ts), p.src, p.raw);
+    }));
+    S = { prod: d.prod, round: d.round, n: d.n, cid: d.cid, product: d.prod.name, employee: d.employee, branch: d.branch,
+      steps: d.steps, photos, idx: Math.min(d.idx || 0, d.steps.length - 1), scaleOk: d.scaleOk, form: null, w: d.w };
+    busy(false);
+    renderCap(); show('sCap', capTitle(), cancelBtn());
+    if (S.steps.every((_, i) => S.photos[i])) goWeight();
+  } catch (e) { busy(false); alert('เปิดรอบที่ค้างไว้ไม่ได้: ' + e.message); }
+}
+
+/* ---------- อัปเดตแอปอัตโนมัติ ---------- */
+let pendingVer = null;
+function verCmp(a, b) { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); return 0; }
+async function doUpdate(ver) { if (S && !S.done) await saveDraft(); busy(true, `กำลังอัปเดตเป็นเวอร์ชัน ${ver}...`); location.replace(location.pathname + '?v=' + ver); }
+async function checkUpdate() {
+  if (location.protocol === 'file:') return;
+  try {
+    const t = await (await fetch(location.pathname + '?check=' + Date.now(), { cache: 'no-store' })).text();
+    const m = t.match(/const APP_VERSION = '([^']+)'/);
+    if (!m || verCmp(m[1], APP_VERSION) <= 0) return;
+    // กำลังถ่าย/กรอกอยู่ ให้รอจบรอบก่อน
+    if (S && !S.done && (document.querySelector('#sCap.on, #sW.on, #sEdit.on') || document.querySelector('.modal.on'))) { pendingVer = m[1]; return; }
+    doUpdate(m[1]);
+  } catch (_) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+
 /* ---------- version ---------- */
 function checkVersion() {
   document.querySelectorAll('.vtxt').forEach(e => e.textContent = 'Yield Record เวอร์ชัน ' + APP_VERSION);
@@ -1126,6 +1268,7 @@ $('verOk').onclick = () => { localStorage.setItem(LS.ver, APP_VERSION); $('verMo
 /* ---------- init ---------- */
 (function init() {
   checkVersion();
+  checkUpdate();
   const code = localStorage.getItem(LS.code), c = localStorage.getItem(LS.cfg);
   if (code && c) { cfg = JSON.parse(c); goHome(); busy(true, 'กำลังโหลด...'); login(code, true).finally(() => busy(false)); } // ใช้ข้อมูลเดิมก่อน แล้วรีเฟรชรายการสินค้าเบื้องหลัง
   else show('sLogin');
