@@ -85,7 +85,9 @@
   .stepper{display:flex;align-items:center;gap:12px}
   .stepper button{width:48px;height:48px;border-radius:14px;border:1px solid var(--gb);background:rgba(255,255,255,.55);font-size:26px;color:var(--pri);font-weight:700}
   .stepper b{font-size:28px;min-width:30px;text-align:center}
-  .fhead,.frow{display:grid;grid-template-columns:72px 1fr 1fr;gap:8px;align-items:center}
+  .fhead,.frow{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center}
+  .modal .card{max-height:88vh;overflow:auto}
+  .wtimg{width:100%;max-height:200px;object-fit:contain;border-radius:12px;background:rgba(0,0,0,.05);margin-bottom:10px}
   .fhead{font-size:13px;color:var(--mut);margin:4px 0 6px}
   .frow{margin-bottom:8px}
   .frow span{font-size:14px;font-weight:600;color:var(--pri)}
@@ -261,7 +263,7 @@
 <!-- WEIGHT -->
 <section class="screen" id="sW">
   <div class="card">
-    <p class="stepttl">กรอกน้ำหนัก (kg)</p>
+    <p class="stepttl">ตรวจน้ำหนักก่อนบันทึก (kg)</p>
     <div id="wForm"></div>
   </div>
   <div class="card">
@@ -352,6 +354,21 @@
 </section>
 
 </main>
+<div class="modal" id="cntModal"><div class="card">
+  <p class="stepttl" id="cntTitle">รอบนี้มีกี่ฟิลเลย์?</p>
+  <p class="mut">เลือกก่อนเริ่มถ่ายรูป (สูงสุด 6 ฟิลเลย์)</p>
+  <div class="stepper" style="justify-content:center;margin:14px 0 18px"><button type="button" id="cntMinus">−</button><b id="cntVal" style="font-size:40px;min-width:60px">1</b><button type="button" id="cntPlus">+</button></div>
+  <button class="btn" id="cntOk">เริ่มถ่ายรูป</button>
+  <button class="btn ghost" id="cntCancel" style="margin-top:6px">ยกเลิก</button>
+</div></div>
+<div class="modal" id="wtModal"><div class="card">
+  <p class="stepttl" id="wtTitle"></p>
+  <img class="wtimg" id="wtImg" alt="">
+  <div id="wtFields"></div>
+  <p class="warn" id="wtWarn"></p>
+  <button class="btn" id="wtOk" disabled>ยืนยันน้ำหนัก</button>
+  <button class="btn ghost" id="wtLater" style="margin-top:6px">กรอกทีหลัง</button>
+</div></div>
 <div class="modal" id="scaleModal"><div class="card">
   <p class="stepttl">⚖️ เช็กตราชั่งก่อนกรอก</p>
   <label class="chk"><input type="checkbox" id="sc1"> ตั้งศูนย์ (Tare) แล้ว</label>
@@ -372,8 +389,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.1.0';
 const CHANGELOG = {
+  '2.1.0': ['เลือกจำนวนฟิลเลย์ก่อนเริ่มถ่ายรูป', 'ถ่ายหรือเลือกรูปเสร็จ จะมีหน้าต่างให้กรอกน้ำหนักของรูปนั้นทันที', 'น้ำหนักฟิลเลย์ใช้ตามป้ายล็อตอย่างเดียว ส่วนหนังเทากับเนื้อพร้อมใช้ใช้น้ำหนักชั่งจริง', 'เช็กตราชั่งก่อนกรอกน้ำหนักหนังเทาของแต่ละรอบ'],
   '2.0.0': ['นับเป็น "รอบที่" แทน "ฟิลเลย์ที่" เลขรอบออกจาก Sheet จึงไม่ซ้ำกันแม้ใช้หลายเครื่อง', 'ระบุจำนวนฟิลเลย์ต่อรอบได้ สูงสุด 6 ฟิลเลย์ แล้วกรอกน้ำหนักตามป้ายกับชั่งจริงแยกทีละฟิลเลย์', 'น้ำหนักใช้ kg อย่างเดียว ก่อนกรอกจะมีหน้าต่างให้เช็กตราชั่งทุกรอบ', 'ต้องถ่ายครบ 3 รูป: ป้ายล็อต (ทุกฟิลเลย์ในรูปเดียว) หนังเทา และเนื้อพร้อมใช้', 'คอลลาจบอกรอบ จำนวนฟิลเลย์ น้ำหนักแต่ละฟิลเลย์ หนังเทา และ Loss เป็น kg'],
   '1.4.0': ['เลือกหน่วย kg หรือ g ได้ทีละช่องน้ำหนัก ไม่ต้องใช้หน่วยเดียวกันทั้งหมด', 'ระหว่างรอโหลดจะมีแซลมอนกระโดดให้ดู'],
   '1.3.0': ['แก้ไขรายการย้อนหลังได้ที่ปุ่ม "ประวัติ / แก้ไข" ทั้งน้ำหนัก ชื่อพนักงาน และรูป', 'กดบันทึกแล้ว ข้อมูลใน Sheet กับรูปคอลลาจใน Drive จะอัปเดตทับของเดิม'],
@@ -508,16 +526,33 @@ async function nextRound(branch, product) {
   try { const r = await api({ action: 'nextround', code: localStorage.getItem(LS.code), branch, product }); if (r.ok && r.round) return r.round; } catch (_) {}
   return (TODAY[product] ? TODAY[product].r : 0) + 1;
 }
-const capTitle = () => `${S.product} • รอบที่ ${S.round}`;
+const capTitle = () => `${S.product} • รอบที่ ${S.round} • ${S.w ? S.w.n : S.n} ฟิลเลย์`;
 const cancelBtn = () => ({ text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรอบนี้?')) goHome(); } });
+/** หน้าต่างเลือกจำนวนฟิลเลย์ คืนค่า null ถ้ายกเลิก */
+function askCount(title, init) {
+  return new Promise(res => {
+    let n = init || 1;
+    const paint = () => { $('cntVal').textContent = n; };
+    $('cntTitle').textContent = title; paint();
+    $('cntMinus').onclick = () => { n = Math.max(1, n - 1); paint(); };
+    $('cntPlus').onclick = () => { n = Math.min(MAX_FILLET, n + 1); paint(); };
+    const close = v => { $('cntModal').classList.remove('on'); res(v); };
+    $('cntOk').onclick = () => close(n);
+    $('cntCancel').onclick = () => close(null);
+    $('cntModal').classList.add('on');
+  });
+}
 async function startRecord(p) {
   const branch = $('inBranch').value;
   busy(true, 'กำลังเตรียมรอบใหม่...');
   const round = await nextRound(branch, p.name);
   busy(false);
+  const n = await askCount(`${p.name} รอบที่ ${round} มีกี่ฟิลเลย์?`, 1);
+  if (!n) return;
   S = {
-    prod: p, round, product: p.name, employee: $('inName').value.trim(), branch,
-    steps: p.steps.map((l, i) => ({ label: l, role: ROLES[i] })), photos: [], idx: 0, scaleOk: false, form: null
+    prod: p, round, n, product: p.name, employee: $('inName').value.trim(), branch,
+    steps: p.steps.map((l, i) => ({ label: l, role: ROLES[i] })), photos: [], idx: 0, scaleOk: false, form: null,
+    w: { n, lab: [], waste: '', after: '' }
   };
   renderCap();
   show('sCap', capTitle(), cancelBtn());
@@ -553,7 +588,8 @@ async function onFile(e, src) {
     S.photos[S.idx] = await processPhoto(file, st.label, src);
     renderCap();
     busy(false);
-    setTimeout(nextStep, 600); // เลื่อนไปขั้นถัดไปอัตโนมัติ
+    await askWeight(S.idx); // ถ่ายเสร็จให้กรอกน้ำหนักของรูปนั้นทันที
+    nextStep();
   } catch (err) { busy(false); alert('อ่านรูปไม่ได้: ' + err.message); }
 }
 function nextStep() {
@@ -599,72 +635,106 @@ const MAX_FILLET = 6;
 const r3 = v => Math.round(v * 1000) / 1000;
 const fmtKg = v => { const t = r3(v).toFixed(3); return t.endsWith('0') ? (+t).toFixed(2) : t; };
 const numIn = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? r3(n) : 0; };
-/** ฟอร์มน้ำหนัก: จำนวนฟิลเลย์ + น้ำหนักตามป้าย/ชั่งจริงทีละฟิลเลย์ + หนังเทา + เนื้อพร้อมใช้ */
+/** ฟอร์มน้ำหนัก: จำนวนฟิลเลย์ + น้ำหนักตามป้ายทีละฟิลเลย์ + หนังเทา + เนื้อพร้อมใช้ (ชั่งจริง) */
 function WForm(root, names, onChange) {
-  const st = { n: 1, lab: [], act: [], waste: '', after: '' };
+  const st = { n: 1, lab: [], waste: '', after: '' };
   root.innerHTML = `
     <div class="field"><label>จำนวนฟิลเลย์ในรอบนี้</label>
       <div class="stepper"><button type="button" data-d="-1">−</button><b class="cnt"></b><button type="button" data-d="1">+</button><span class="mut">สูงสุด ${MAX_FILLET} ฟิลเลย์</span></div></div>
-    <div class="fhead"><span></span><span>ตามป้าย (kg)</span><span>ชั่งจริง (kg)</span></div>
+    <label>น้ำหนักฟิลเลย์ตามป้ายล็อต (kg)</label>
     <div class="flist"></div>
-    <div class="field"><label>น้ำหนัก${esc(names[1])} (kg)</label><input class="iw" type="text" inputmode="decimal" placeholder="0.000"></div>
-    <div class="field"><label>น้ำหนัก${esc(names[2])} (kg)</label><input class="ia" type="text" inputmode="decimal" placeholder="0.000"></div>
+    <div class="field"><label>น้ำหนัก${esc(names[1])} ชั่งจริง (kg)</label><input class="iw" type="text" inputmode="decimal" placeholder="0.000"></div>
+    <div class="field"><label>น้ำหนัก${esc(names[2])} ชั่งจริง (kg)</label><input class="ia" type="text" inputmode="decimal" placeholder="0.000"></div>
     <div class="res">
       <div class="big"><span>Yield</span><b class="ry">-</b></div>
-      <div><span class="mut">รวมชั่งจริง</span><b class="rt">-</b></div>
-      <div><span class="mut">ต่างจากป้าย</span><b class="rd">-</b></div>
+      <div><span class="mut">รวมฟิลเลย์ (ป้าย)</span><b class="rt">-</b></div>
       <div><span class="mut">${esc(names[1])}</span><b class="rw">-</b></div>
-      <div><span class="mut">Loss</span><b class="rl">-</b></div>
+      <div style="grid-column:1/-1"><span class="mut">Loss</span><b class="rl">-</b></div>
     </div>
     <p class="warn"></p>`;
   const q = sel => root.querySelector(sel);
   function rows() {
     q('.cnt').textContent = st.n;
     q('.flist').innerHTML = Array.from({ length: st.n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span>
-      <input data-k="lab" data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.lab[i] || '')}">
-      <input data-k="act" data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.act[i] || '')}"></div>`).join('');
+      <input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.lab[i] || '')}"></div>`).join('');
   }
   q('.stepper').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; st.n = Math.min(MAX_FILLET, Math.max(1, st.n + +b.dataset.d)); rows(); upd(); };
-  q('.flist').oninput = e => { const t = e.target; if (!t.dataset.k) return; st[t.dataset.k][+t.dataset.i] = t.value; upd(); };
+  q('.flist').oninput = e => { const t = e.target; if (t.dataset.i == null) return; st.lab[+t.dataset.i] = t.value; upd(); };
   q('.iw').oninput = e => { st.waste = e.target.value; upd(); };
   q('.ia').oninput = e => { st.after = e.target.value; upd(); };
-  function get() {
-    const lab = [], act = [];
-    for (let i = 0; i < st.n; i++) { lab.push(numIn(st.lab[i] || '')); act.push(numIn(st.act[i] || '')); }
-    const before = r3(act.reduce((a, b) => a + b, 0)), labelTotal = r3(lab.reduce((a, b) => a + b, 0));
-    const waste = numIn(st.waste), after = numIn(st.after), loss = r3(before - waste - after);
-    const complete = lab.every(v => v > 0) && act.every(v => v > 0) && String(st.waste).trim() !== '' && after > 0;
-    const odd = [];
-    lab.forEach((v, i) => { if (v && (v > 10 || v < 0.1)) odd.push(`ป้ายฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
-    act.forEach((v, i) => { if (v && (v > 10 || v < 0.1)) odd.push(`ชั่งจริงฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
-    if (waste > 10) odd.push(`${names[1]} = ${fmtKg(waste)} kg`);
-    if (after > 60) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
-    return { n: st.n, lab, act, before, labelTotal, waste, after, loss, unit: 'kg', complete, odd,
-      yieldPct: before ? after / before * 100 : 0, wastePct: before ? waste / before * 100 : 0, lossPct: before ? loss / before * 100 : 0 };
-  }
+  function get() { return calcW(st, names); }
   function upd() {
     const v = get(), ok = v.before > 0;
     q('.ry').textContent = ok && v.after ? f2(v.yieldPct) + '%' : '-';
     q('.rt').textContent = ok ? fmtKg(v.before) + ' kg' : '-';
-    q('.rd').textContent = ok && v.lab.every(x => x > 0) ? (v.before >= v.labelTotal ? '+' : '') + fmtKg(v.before - v.labelTotal) + ' kg' : '-';
-    q('.rw').textContent = ok && String(st.waste).trim() !== '' ? f2(v.wastePct) + '%' : '-';
+    q('.rw').textContent = ok && String(st.waste).trim() !== '' ? `${fmtKg(v.waste)} kg (${f2(v.wastePct)}%)` : '-';
     q('.rl').textContent = ok && v.after ? `${fmtKg(v.loss)} kg (${f2(v.lossPct)}%)` : '-';
-    const w = [];
-    if (v.odd.length) w.push('⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า: ' + v.odd.join(', '));
-    if (ok && v.after && v.loss < -0.0005) w.push(`⚠️ ${names[1]}รวมกับ${names[2]}หนักกว่าฟิลเลย์ที่ชั่งจริง ลองเช็กน้ำหนักอีกครั้ง`);
-    q('.warn').innerHTML = w.map(esc).join('<br>');
+    q('.warn').innerHTML = v.warn.map(esc).join('<br>');
     if (onChange) onChange(v);
   }
   rows();
   return {
     get, refresh: upd,
+    state: () => ({ n: st.n, lab: st.lab.slice(0, st.n), waste: st.waste, after: st.after }),
     set(d) {
       st.n = Math.min(MAX_FILLET, Math.max(1, d.n || 1));
-      st.lab = (d.lab || []).map(x => x ? String(x) : ''); st.act = (d.act || []).map(x => x ? String(x) : '');
+      st.lab = (d.lab || []).map(x => x === 0 || x ? String(x) : '');
       st.waste = d.waste === '' || d.waste == null ? '' : String(d.waste); st.after = d.after ? String(d.after) : '';
       q('.iw').value = st.waste; q('.ia').value = st.after; rows(); upd();
     }
   };
+}
+/** คำนวณจากค่าที่กรอก (ข้อความ) */
+function calcW(st, names) {
+  const lab = [];
+  for (let i = 0; i < st.n; i++) lab.push(numIn(st.lab[i] || ''));
+  const before = r3(lab.reduce((a, b) => a + b, 0));
+  const waste = numIn(st.waste), after = numIn(st.after), loss = r3(before - waste - after);
+  const complete = lab.every(v => v > 0) && String(st.waste).trim() !== '' && after > 0;
+  const odd = [];
+  lab.forEach((v, i) => { if (v && (v > 10 || v < 0.1)) odd.push(`ฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
+  if (waste > 10) odd.push(`${names[1]} = ${fmtKg(waste)} kg`);
+  if (after > 60) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
+  const warn = [];
+  if (odd.length) warn.push('⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า: ' + odd.join(', '));
+  if (before > 0 && after > 0 && loss < -0.0005) warn.push(`⚠️ ${names[1]}รวมกับ${names[2]}หนักกว่าน้ำหนักฟิลเลย์ตามป้าย ลองเช็กอีกครั้ง`);
+  return { n: st.n, lab, act: [], before, labelTotal: before, waste, after, loss, unit: 'kg', complete, odd, warn,
+    yieldPct: before ? after / before * 100 : 0, wastePct: before ? waste / before * 100 : 0, lossPct: before ? loss / before * 100 : 0 };
+}
+/** หน้าต่างกรอกน้ำหนักหลังถ่ายรูปแต่ละใบ */
+async function askWeight(idx) {
+  const names = S.steps.map(x => x.label), w = S.w;
+  if (idx >= 1 && !S.scaleOk) { await scaleCheck(); S.scaleOk = true; } // ชั่งจริงเริ่มที่หนังเทา
+  return new Promise(res => {
+    $('wtImg').src = S.photos[idx] ? S.photos[idx].stamped : '';
+    const one = (cls, val) => `<div class="field"><input class="${cls}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(val || '')}"></div>`;
+    if (idx === 0) {
+      $('wtTitle').textContent = `น้ำหนักตามป้ายล็อต (kg) • ${w.n} ฟิลเลย์`;
+      $('wtFields').innerHTML = Array.from({ length: w.n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span><input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(w.lab[i] || '')}"></div>`).join('');
+    } else {
+      $('wtTitle').textContent = `น้ำหนัก${names[idx]} ชั่งจริง (kg)`;
+      $('wtFields').innerHTML = one('wv', idx === 1 ? w.waste : w.after);
+    }
+    const read = () => {
+      if (idx === 0) $('wtFields').querySelectorAll('[data-i]').forEach(el => w.lab[+el.dataset.i] = el.value);
+      else if (idx === 1) w.waste = $('wtFields').querySelector('.wv').value;
+      else w.after = $('wtFields').querySelector('.wv').value;
+    };
+    const check = () => {
+      read();
+      let vals = idx === 0 ? w.lab.slice(0, w.n).map(numIn) : [numIn(idx === 1 ? w.waste : w.after)];
+      if (idx === 0) while (vals.length < w.n) vals.push(0);
+      const filled = idx === 1 ? String(w.waste).trim() !== '' : vals.every(v => v > 0);
+      const lim = idx === 2 ? 60 : 10, odd = vals.filter(v => v && (v > lim || (idx === 0 && v < 0.1)));
+      $('wtWarn').textContent = odd.length ? '⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
+      $('wtOk').disabled = !filled;
+    };
+    $('wtFields').oninput = check; check();
+    const close = () => { read(); $('wtModal').classList.remove('on'); if (S.form) S.form.set(S.w); res(); };
+    $('wtOk').onclick = close; $('wtLater').onclick = close;
+    $('wtModal').classList.add('on');
+    setTimeout(() => { const f = $('wtFields').querySelector('input'); if (f) f.focus(); }, 150);
+  });
 }
 /** หน้าต่างเช็กตราชั่ง ต้องติ๊กครบ 2 ข้อถึงกรอกน้ำหนักได้ */
 function scaleCheck() {
@@ -677,14 +747,15 @@ function scaleCheck() {
 }
 let collageTimer;
 async function goWeight() {
-  if (!S.form) { S.form = WForm($('wForm'), S.steps.map(x => x.label), calc); S.form.refresh(); }
+  if (!S.form) S.form = WForm($('wForm'), S.steps.map(x => x.label), calc);
+  S.form.set(S.w);
   show('sW', capTitle(), cancelBtn());
-  if (!S.scaleOk) { await scaleCheck(); S.scaleOk = true; }
 }
 $('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', capTitle(), cancelBtn()); };
 function calc(v) {
   if (!S || !S.form) return;
   v = v || S.form.get();
+  S.w = S.form.state();
   $('btnSave').disabled = !v.complete;
   clearTimeout(collageTimer);
   collageTimer = setTimeout(() => { $('collagePrev').src = buildCollage().toDataURL('image/jpeg', 0.7); }, 250);
@@ -704,7 +775,7 @@ function drawInfo(c, y0, W, INFO, d) {
   c.font = `bold 38px ${F}`; c.fillText(`${d.product}  •  รอบที่ ${d.round}  •  ${v.n} ฟิลเลย์`, 30, y0 + 22, 790);
   c.font = `25px ${F}`;
   c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 790);
-  c.fillText(`ฟิลเลย์ (ชั่งจริง) ${v.act.map(fmtKg).join(', ')} kg  =  ${fmtKg(v.before)} kg   (ป้าย ${fmtKg(v.labelTotal)} kg)`, 30, y0 + 125, 790);
+  c.fillText(`ฟิลเลย์ (ตามป้าย) ${v.lab.map(fmtKg).join(', ')} kg  =  ${fmtKg(v.before)} kg`, 30, y0 + 125, 790);
   c.fillText(`${d.names[1]} ${fmtKg(v.waste)} kg  •  ${d.names[2]} ${fmtKg(v.after)} kg  •  Loss ${fmtKg(v.loss)} kg (${ok ? f2(v.lossPct) : '-'}%)`, 30, y0 + 170, 790);
   c.textAlign = 'right';
   c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
@@ -742,7 +813,7 @@ $('btnSave').onclick = async () => {
       action: 'save', code: localStorage.getItem(LS.code),
       branch: S.branch, employee: S.employee, product: S.product, round: S.round, appVersion: APP_VERSION,
       unit: 'kg', before: v.before, waste: v.waste, after: v.after,
-      fillets: v.n, labelKg: v.lab, actualKg: v.act, labelTotal: v.labelTotal,
+      fillets: v.n, labelKg: v.lab, labelTotal: v.labelTotal,
       collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)),
       photoTimes: S.steps.map((s, i) => S.photos[i] ? `${s.label}: ${fmtDT(S.photos[i].ts)}${S.photos[i].src === 'gallery' ? ' (แกลเลอรี)' : ''}` : null).filter(Boolean)
     };
@@ -985,8 +1056,7 @@ async function openEdit(rec) {
     $('editInfo').textContent = `${rec.product}${rec.round ? ' • รอบที่ ' + rec.round : ''} • ${thDate(rec.date)} ${rec.time}`;
     $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}" style="padding:11px">📷 ${esc(l)}</button>`).join('');
     E.form = WForm($('eForm'), E.labels, calcEdit);
-    E.form.set({ n: rec.filletCount || 1, lab: rec.labelKg || [],
-      act: rec.actualKg && rec.actualKg.length ? rec.actualKg : [toKg(rec.before, rec.unit)],
+    E.form.set({ n: rec.filletCount || 1, lab: rec.labelKg && rec.labelKg.length ? rec.labelKg : [toKg(rec.before, rec.unit)],
       waste: toKg(rec.waste, rec.unit), after: toKg(rec.after, rec.unit) });
     busy(false);
     show('sEdit', 'แก้ไขรายการ', { text: '← กลับ', fn: backToHist });
@@ -1033,7 +1103,7 @@ $('btnEditSave').onclick = async () => {
   busy(true, 'กำลังบันทึก...');
   try {
     const body = { action: 'update', code: localStorage.getItem(LS.code), id: E.rec.id, employee: $('eName').value.trim(),
-      unit: 'kg', before: v.before, waste: v.waste, after: v.after, fillets: v.n, labelKg: v.lab, actualKg: v.act, labelTotal: v.labelTotal, collage: buildEditCollage().toDataURL('image/jpeg', 0.85), appVersion: APP_VERSION };
+      unit: 'kg', before: v.before, waste: v.waste, after: v.after, fillets: v.n, labelKg: v.lab, labelTotal: v.labelTotal, collage: buildEditCollage().toDataURL('image/jpeg', 0.85), appVersion: APP_VERSION };
     const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
     const res = await r.json();
     busy(false);
