@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f6f5c">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Yield Record</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,93 +14,129 @@
 <meta name="apple-mobile-web-app-title" content="Yield">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-  :root{--pri:#1f6f5c;--pri2:#2fb39a;--txt:#16302a;--mut:#4e6660;--bad:#c0392b;
-    --glass:rgba(255,255,255,.32);--glass2:rgba(255,255,255,.5);--gb:rgba(255,255,255,.65);
-    --blur:blur(18px) saturate(170%)}
+  /* Yield Record design tokens (ตรงกับไฟล์ Figma) */
+  :root{
+    --s-25:2px;--s-50:4px;--s-75:8px;--s-100:12px;--s-200:16px;--s-300:24px;--s-400:32px;--s-600:48px;
+    --r-6:6px;--r-8:8px;--r-12:12px;--r-16:16px;--r-24:24px;--r-full:9999px;
+    --surface:#FAF8F4;--surface-2:#FFFFFF;--surface-sub:#F3F1EC;--surface-sel:#EAE7E1;--surface-ter:#DEDBD4;
+    --surface-brand:#184B3F;--info:#1E6555;--info-sub:#E4F2EF;--acc:#F26A3D;--acc-sub:#FDECE6;
+    --warn-sub:#FEF5DF;--warn-bd:#CA9402;--warn-tx:#5E4607;--err:#943134;--err-sub:#FCE8E8;--err-bd:#BD3D41;
+    --ok:#29885A;--ok-sub:#E5F3EC;
+    --bd:#DEDBD4;--bd-2:#D0CCC4;--bd-act:#1E6555;--focus:#C75834;
+    --act:#1E6555;--act-hover:#184B3F;--act-click:#163D34;--act-dis:#A6D5CA;
+    --tx:#181818;--tx-2:#43413D;--tx-3:#585550;--tx-dis:#BDB9B1;--tx-inv:#FFFFFF;--tx-brand:#184B3F;--tx-acc:#9D472A;
+    --scrim:rgba(67,65,61,.64);
+    --font:"Prompt",-apple-system,"Noto Sans Thai",sans-serif;--mono:"Geist Mono",ui-monospace,monospace;
+    --ease:cubic-bezier(.22,1,.36,1)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html{background:#e9f3ef}
-  body{margin:0;font-family:-apple-system,"Sukhumvit Set","Noto Sans Thai",sans-serif;color:var(--txt);font-size:16px;min-height:100vh;background:transparent}
-  /* ---------- background ---------- */
-  .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;
-    background:linear-gradient(160deg,#dff3ec 0%,#fbe9df 55%,#fff6d9 100%)}
-  .bg .blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.75}
-  .bg .b1{width:60vmax;height:60vmax;background:#ff9a6b;top:-20vmax;right:-22vmax}
-  .bg .b2{width:55vmax;height:55vmax;background:#3cc0a3;bottom:-22vmax;left:-20vmax}
-  .bg .b3{width:30vmax;height:30vmax;background:#ffd54a;top:40%;left:55%;opacity:.5}
-  .bg svg{position:absolute;inset:0;width:100%;height:100%}
-  /* ---------- glass ---------- */
-  .glass,.card,header,.pbtn,.btn.sec,.unit,.res div,input,select,.preview,.stepbar div{
-    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
-  header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.28);border-bottom:1px solid var(--gb);
-    padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px;
-    box-shadow:0 4px 24px rgba(20,60,50,.08)}
-  header img{width:34px;height:34px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-  header h1{font-size:18px;margin:0;flex:1;color:var(--pri);letter-spacing:.2px}
-  header button{background:var(--glass2);color:var(--pri);border:1px solid var(--gb);border-radius:10px;padding:7px 12px;font-size:14px;font-weight:600}
-  main{padding:16px;max-width:560px;margin:0 auto;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
-  .screen{display:none}.screen.on{display:block;animation:fade .25s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .card{background:var(--glass);border:1px solid var(--gb);border-radius:20px;padding:16px;margin-bottom:14px;
-    box-shadow:0 8px 32px rgba(20,60,50,.12),inset 0 1px 0 rgba(255,255,255,.7)}
-  label{display:block;font-size:14px;color:var(--mut);margin:0 0 6px;font-weight:500}
-  input,select{width:100%;font-size:17px;padding:12px 14px;border:1px solid var(--gb);border-radius:12px;
-    background:rgba(255,255,255,.55);color:var(--txt);outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.05)}
-  input:focus,select:focus{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(47,179,154,.25)}
-  .field{margin-bottom:14px}
-  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:1px solid rgba(255,255,255,.45);
-    border-radius:16px;padding:15px;font-size:17px;font-weight:600;color:#fff;
-    background:linear-gradient(135deg,rgba(47,179,154,.88),rgba(21,88,74,.9));
-    box-shadow:0 8px 22px rgba(21,88,74,.3),inset 0 1px 0 rgba(255,255,255,.45)}
-  .btn:active{transform:scale(.98)}.btn[disabled]{opacity:.45}
-  .btn.sec{background:rgba(255,255,255,.42);color:var(--pri);border-color:var(--gb);box-shadow:0 4px 16px rgba(20,60,50,.1),inset 0 1px 0 rgba(255,255,255,.8)}
-  .btn.ghost{background:transparent;color:var(--mut);font-weight:500;box-shadow:none;border-color:transparent}
-  .row{display:flex;gap:10px}.row>*{flex:1}
-  .plist{display:grid;gap:10px}
-  .pbtn{display:flex;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.4);border:1px solid var(--gb);
-    border-radius:16px;padding:12px;font-size:17px;color:var(--txt);box-shadow:0 4px 14px rgba(20,60,50,.08),inset 0 1px 0 rgba(255,255,255,.8)}
-  .pbtn:active{transform:scale(.98)}
-  .pbtn .ic{flex:0 0 48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;
-    background:linear-gradient(135deg,rgba(255,163,107,.55),rgba(255,213,74,.45));border:1px solid var(--gb)}
-  .pbtn small{display:block;color:var(--mut);font-size:13px;margin-top:3px}
-  .stepbar{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding:2px}
-  .stepbar div{flex:0 0 66px;height:66px;border-radius:14px;background:rgba(255,255,255,.4) center/cover no-repeat;border:2px solid var(--gb);font-size:11px;display:flex;align-items:flex-end;justify-content:center;color:#fff;text-shadow:0 1px 2px #000;padding:3px;text-align:center}
-  .stepbar div.cur{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(47,179,154,.3)}
-  .stepbar div.empty{color:var(--mut);text-shadow:none;align-items:center}
-  .stepttl{font-size:20px;font-weight:700;margin:0 0 4px}
-  .mut{color:var(--mut);font-size:14px}
-  .preview{width:100%;aspect-ratio:3/4;border-radius:16px;background:rgba(255,255,255,.35) center/contain no-repeat;border:1px dashed rgba(31,111,92,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mut);font-size:15px;margin:12px 0}
-  .unit{display:flex;background:rgba(255,255,255,.35);border:1px solid var(--gb);border-radius:14px;padding:4px;margin-bottom:14px}
-  .unit button{flex:1;border:0;background:transparent;padding:10px;border-radius:10px;font-size:16px;color:var(--pri)}
-  .unit button.on{background:linear-gradient(135deg,rgba(47,179,154,.9),rgba(21,88,74,.9));color:#fff;font-weight:600;box-shadow:0 3px 10px rgba(21,88,74,.3)}
-  .res{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .res div{background:rgba(255,255,255,.4);border:1px solid var(--gb);border-radius:14px;padding:10px}
-  .res b{display:block;font-size:22px}
-  .res .big{grid-column:1/-1;background:linear-gradient(135deg,rgba(255,138,92,.85),rgba(242,106,61,.88));color:#fff;border-color:rgba(255,255,255,.5)}
-  .res .big b{font-size:34px}
-  .warn{color:var(--bad);font-size:14px;margin-top:8px}
-  #collagePrev{width:100%;border-radius:12px;display:block}
-  .hero{text-align:center;padding:8px 0 4px}
-  .hero img{width:96px;height:96px;border-radius:24px;box-shadow:0 10px 30px rgba(21,88,74,.3)}
-  .hero h2{margin:12px 0 2px;font-size:24px;color:var(--pri)}
-  .overlay{position:fixed;inset:0;background:rgba(20,40,35,.35);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:20;color:#fff;font-size:17px;flex-direction:column;gap:12px}
+  html{background:var(--surface)}
+  body{margin:0;font-family:var(--font);color:var(--tx);font-size:16px;line-height:24px;min-height:100vh;background:var(--surface)}
+  ::selection{background:var(--acc-sub);color:var(--tx)}
+  .ico{width:24px;height:24px;flex:0 0 auto;fill:currentColor}
+  .ico.sm{width:20px;height:20px}
+  /* ---------- app bar ---------- */
+  header{position:sticky;top:0;z-index:5;background:var(--surface-2);border-bottom:1px solid var(--bd);
+    padding:calc(env(safe-area-inset-top) + var(--s-100)) var(--s-200) var(--s-100);display:flex;align-items:center;gap:var(--s-100);min-height:64px}
+  header .logo{width:40px;height:40px;border-radius:var(--r-12);flex:0 0 40px;display:block}
+  header .ht{flex:1;min-width:0}
+  header h1{font-size:18px;line-height:28px;font-weight:500;margin:0;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header small{display:block;font-size:14px;line-height:20px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header small:empty{display:none}
+  header button{min-height:44px;background:transparent;color:var(--tx-brand);border:0;border-radius:var(--r-12);padding:0 var(--s-100);font:600 14px/20px var(--font);display:flex;align-items:center;gap:6px}
+  header button:active{background:var(--surface-sub)}
+  main{padding:var(--s-300);max-width:560px;margin:0 auto;padding-bottom:calc(env(safe-area-inset-bottom) + var(--s-400))}
+  .screen{display:none}.screen.on{display:block;animation:fade .3s var(--ease)}
+  @keyframes fade{from{opacity:.4}to{opacity:1}}
+  .card{background:var(--surface-2);border:1px solid var(--bd);border-radius:var(--r-16);padding:var(--s-200);margin-bottom:var(--s-200)}
+  .sect{font-size:16px;line-height:24px;font-weight:500;margin:var(--s-300) 0 var(--s-100)}
+  label{display:block;font-size:14px;line-height:20px;color:var(--tx-2);margin:0 0 var(--s-75);font-weight:500}
+  input,select{width:100%;font:400 17px/24px var(--font);padding:var(--s-100) var(--s-200);border:1.5px solid var(--bd-2);border-radius:var(--r-12);
+    background:var(--surface-2);color:var(--tx);outline:none;min-height:48px;-webkit-appearance:none;appearance:none}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23585550' d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px;padding-right:44px}
+  input[inputmode=decimal]{font-family:var(--mono);font-weight:500;font-size:20px;letter-spacing:.2px}
+  input::placeholder{color:var(--tx-dis)}
+  input:focus,select:focus{border-color:var(--bd-act);border-width:2px}
+  button:focus-visible,.pbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  .field{margin-bottom:var(--s-200)}
+  /* ---------- buttons ---------- */
+  .btn{display:flex;align-items:center;justify-content:center;gap:var(--s-75);width:100%;min-height:48px;border:0;
+    border-radius:var(--r-12);padding:var(--s-100) var(--s-300);font:600 16px/24px var(--font);color:var(--tx-inv);background:var(--act);transition:background .2s var(--ease)}
+  .btn:active{background:var(--act-click)}
+  .btn[disabled]{background:var(--act-dis);color:var(--tx-inv);cursor:not-allowed}
+  .btn.sec{background:var(--surface-2);color:var(--tx-brand);box-shadow:inset 0 0 0 1.5px var(--bd-act)}
+  .btn.sec:active{background:var(--surface-sel)}
+  .btn.sec[disabled]{color:var(--tx-dis);box-shadow:inset 0 0 0 1.5px var(--bd)}
+  .btn.ghost{background:transparent;color:var(--tx-brand)}
+  .btn.ghost:active{background:var(--surface-sel)}
+  @media (hover:hover){.btn:hover{background:var(--act-hover)}.btn.sec:hover,.btn.ghost:hover{background:var(--surface-sub)}input:hover,select:hover{border-color:#9A968F}.btn[disabled]:hover{background:var(--act-dis)}}
+  .btn+.btn{margin-top:var(--s-100)}
+  .row{display:flex;gap:var(--s-100)}.row>*{flex:1}.row .btn+.btn{margin-top:0}
+  /* ---------- product ---------- */
+  .plist{display:grid;gap:var(--s-100)}
+  .pbtn{display:flex;align-items:center;gap:var(--s-200);text-align:left;background:var(--surface-2);border:1px solid var(--bd);
+    border-radius:var(--r-16);padding:var(--s-200);font:500 18px/28px var(--font);color:var(--tx);width:100%}
+  .pbtn:active{background:var(--info-sub);border-color:var(--bd-act)}
+  .pbtn .ic{flex:0 0 48px;height:48px;border-radius:var(--r-12);display:flex;align-items:center;justify-content:center;background:var(--acc-sub);color:#C75834}
+  .pbtn .txt{flex:1;min-width:0}
+  .pbtn small{display:block;color:var(--tx-3);font-size:14px;line-height:20px;font-weight:400}
+  .pbtn .go{color:#6F6C66}
+  /* ---------- capture ---------- */
+  .track{display:flex;gap:var(--s-75);margin-bottom:var(--s-200)}
+  .track span{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-full);padding:var(--s-50) var(--s-75);
+    background:var(--surface-sub);color:var(--tx-2);font:600 12px/16px var(--font);white-space:nowrap;overflow:hidden}
+  .track span i{font-style:normal;width:20px;height:20px;border-radius:50%;background:var(--surface-ter);display:flex;align-items:center;justify-content:center;flex:0 0 20px}
+  .track span.done{background:var(--info-sub);color:var(--tx-brand)}.track span.done i{background:var(--info);color:#fff}
+  .track span.cur{background:var(--info);color:#fff}.track span.cur i{background:#fff;color:var(--tx-brand)}
+  .stepbar{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-75);margin:var(--s-100) 0 var(--s-200)}
+  .stepbar div{aspect-ratio:1;border-radius:var(--r-12);background:var(--surface-sub) center/cover no-repeat;border:1px solid var(--bd-2);font:600 12px/16px var(--font);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;color:#fff;padding:6px;text-align:center;position:relative;overflow:hidden}
+  .stepbar div:not(.empty)::after{content:"";position:absolute;inset:auto 0 0 0;height:44%;background:rgba(24,24,24,.6)}
+  .stepbar div b{position:relative;z-index:1;font-weight:600}
+  .stepbar div.empty{color:var(--tx-3);justify-content:center;border-style:dashed}
+  .stepbar div.cur{border:2px solid var(--bd-act)}
+  .stepbar div.empty.cur{background:var(--info-sub);color:var(--tx-brand);border-style:solid}
+  .stepttl{font-size:20px;line-height:28px;font-weight:500;margin:0 0 var(--s-50)}
+  .mut{color:var(--tx-3);font-size:14px;line-height:20px}
+  .preview{width:100%;aspect-ratio:3/4;border-radius:var(--r-16);background:var(--surface-sub) center/contain no-repeat;border:1.5px dashed var(--bd-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s-75);color:var(--tx-3);font-size:14px;margin:var(--s-200) 0}
+  .preview.has{background-color:#1F1F1F;border:0}
+  .preview .ico{width:40px;height:40px;color:#9A968F}
+  /* ---------- segmented ---------- */
+  .unit{display:flex;background:var(--surface-sub);border-radius:var(--r-12);padding:var(--s-50);gap:var(--s-50);margin-bottom:var(--s-200)}
+  .unit button{flex:1;border:0;background:transparent;padding:var(--s-75);border-radius:var(--r-8);font:600 14px/20px var(--font);color:var(--tx-2);min-height:40px}
+  .unit button.on{background:var(--surface-2);color:var(--tx-brand);box-shadow:inset 0 0 0 1px var(--bd)}
+  /* ---------- results ---------- */
+  .res{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-75)}
+  .res div{background:var(--surface-sub);border-radius:var(--r-12);padding:var(--s-100)}
+  .res span{font-size:14px;line-height:20px}
+  .res b{display:block;font:500 20px/28px var(--mono)}
+  .res .big{grid-column:1/-1;background:var(--info-sub)}
+  .res .big span{color:var(--info);font-weight:500}
+  .res .big b{font-size:36px;line-height:44px;color:var(--tx-brand)}
+  .warn{color:var(--err);font-size:14px;line-height:20px;margin:var(--s-100) 0 0}
+  .warn:empty{display:none}
+  p.warn:not(:empty){background:var(--warn-sub);border:1px solid var(--warn-bd);color:var(--warn-tx);border-radius:var(--r-12);padding:var(--s-100) var(--s-200)}
+  #loginErr.warn:not(:empty){background:var(--err-sub);border-color:var(--err-bd);color:var(--err)}
+  #collagePrev{width:100%;border-radius:var(--r-12);display:block}
+  .hero{padding:var(--s-200) 0 var(--s-300)}
+  .hero .logo{width:72px;height:72px;border-radius:var(--r-16);display:block}
+  .hero .logo .ico{width:36px;height:36px}
+  .hero h2{margin:var(--s-200) 0 var(--s-75);font-size:36px;line-height:48px;font-weight:400;color:var(--tx)}
+  .hero p{margin:0;color:var(--tx-2);font-size:16px;line-height:24px}
+  .overlay{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;z-index:40;color:#fff;font-size:17px;flex-direction:column;gap:var(--s-100)}
   .overlay.on{display:flex}
-  .stepper{display:flex;align-items:center;gap:12px}
-  .stepper button{width:48px;height:48px;border-radius:14px;border:1px solid var(--gb);background:rgba(255,255,255,.55);font-size:26px;color:var(--pri);font-weight:700}
-  .stepper b{font-size:28px;min-width:30px;text-align:center}
-  .fhead,.frow{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center}
-  .modal .card{max-height:88vh;overflow:auto}
-  .modesw{margin-bottom:10px}
-  .wtimg{width:100%;max-height:200px;object-fit:contain;border-radius:12px;background:rgba(0,0,0,.05);margin-bottom:10px}
-  .fhead{font-size:13px;color:var(--mut);margin:4px 0 6px}
-  .frow{margin-bottom:8px}
-  .frow span{font-size:14px;font-weight:600;color:var(--pri)}
-  .flist{margin-bottom:10px}
-  .chk{display:flex!important;align-items:center;gap:10px;font-size:17px!important;color:var(--txt)!important;padding:10px 0}
-  .chk input{width:24px;height:24px;flex:0 0 24px}
-  .wrow{display:flex;gap:8px;align-items:stretch}
-  .wrow input{flex:1;min-width:0}
-  .unit.mini{margin:0;flex:0 0 auto;padding:3px;border-radius:12px}
-  .unit.mini button{flex:none;padding:8px 13px;font-size:15px;border-radius:9px}
+  .stepper{display:flex;align-items:center;gap:var(--s-200)}
+  .stepper button{width:56px;height:56px;border-radius:var(--r-12);border:1.5px solid var(--bd-2);background:var(--surface-2);color:var(--tx);display:flex;align-items:center;justify-content:center;padding:0}
+  .stepper button:active{background:var(--surface-sub)}
+  .stepper button:disabled{color:var(--tx-dis);border-color:var(--bd)}
+  .stepper b{font:500 36px/40px var(--mono);min-width:64px;text-align:center}
+  .fhead,.frow{display:grid;grid-template-columns:84px 1fr;gap:var(--s-200);align-items:center}
+  .wtimg{width:100%;max-height:200px;object-fit:contain;border-radius:var(--r-12);background:#1F1F1F;margin-bottom:var(--s-200)}
+  .fhead{font-size:13px;color:var(--tx-3);margin:4px 0 6px}
+  .frow{margin-bottom:var(--s-100)}
+  .frow span{font-size:14px;line-height:20px;font-weight:500;color:var(--tx-2)}
+  .flist{margin-bottom:var(--s-100)}
+  .chk{display:flex!important;align-items:center;gap:var(--s-100);font-size:16px!important;line-height:24px;color:var(--tx)!important;padding:var(--s-75) 0;margin:0!important;font-weight:400!important}
+  .chk input{width:24px;height:24px;min-height:0;flex:0 0 24px;padding:0;border-radius:6px;accent-color:var(--act);-webkit-appearance:checkbox;appearance:auto}
   .loader{display:flex;flex-direction:column;align-items:center;gap:6px}
   .loader svg{width:170px;height:120px;overflow:visible}
   .loader.sm svg{width:110px;height:78px}
@@ -109,111 +147,97 @@
     50%{transform:translate(100px,38px) rotate(0deg)}
     78%{transform:translate(130px,62px) rotate(38deg)}
     100%{transform:translate(152px,128px) rotate(62deg)}}
-  .loader .spl{fill:none;stroke:#7fd3c2;stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+  .loader .spl{fill:none;stroke:#A6D5CA;stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
   .loader .s1{animation:spl 1.5s ease-out infinite}
   .loader .s2{animation:spl 1.5s ease-out infinite;animation-delay:.75s}
   @keyframes spl{0%{opacity:.9;transform:scale(.3)}45%{opacity:0;transform:scale(1.4)}100%{opacity:0}}
   .loader .wave{animation:wave 2s linear infinite}
   @keyframes wave{to{transform:translateX(-40px)}}
-  .overlay .loader span{font-size:17px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3)}
-  .card .loader span{color:var(--mut);font-size:14px}
-  @keyframes s{to{transform:rotate(360deg)}}
-  .ok{font-size:60px;text-align:center}
+  .overlay .loader span{font-size:16px;color:#fff}
+  .card .loader span{color:var(--tx-3);font-size:14px}
+  @media (prefers-reduced-motion:reduce){.loader .fish,.loader .wave,.loader .spl{animation:none}.screen.on{animation:none}}
+  .okb{width:80px;height:80px;border-radius:50%;background:var(--ok-sub);color:var(--ok);display:flex;align-items:center;justify-content:center;margin:var(--s-200) auto var(--s-100)}
+  .okb .ico{width:44px;height:44px}
   input[type=file]{display:none}
-  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-  .kpi div{background:rgba(255,255,255,.42);border:1px solid var(--gb);border-radius:14px;padding:10px}
-  .kpi b{display:block;font-size:22px}
-  .kpi .big{grid-column:1/-1;background:linear-gradient(135deg,rgba(255,138,92,.85),rgba(242,106,61,.88));color:#fff}
-  .kpi .big b{font-size:32px}
-  .kpi .big .mut{color:rgba(255,255,255,.9)}
+  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-75);margin-bottom:var(--s-100)}
+  .kpi div{background:var(--surface-sub);border-radius:var(--r-12);padding:var(--s-100)}
+  .kpi b{display:block;font:500 20px/28px var(--mono)}
+  .kpi .big{grid-column:1/-1;background:var(--info-sub)}
+  .kpi .big b{font-size:32px;line-height:40px;color:var(--tx-brand)}
+  .kpi .big .mut{color:var(--info)}
   table.t{width:100%;border-collapse:collapse;font-size:14px}
-  table.t th{text-align:left;color:var(--mut);font-weight:500;padding:6px 4px;border-bottom:1px solid rgba(31,111,92,.2)}
-  table.t td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.6)}
-  table.t td.n,table.t th.n{text-align:right}
-  .rec{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.6);color:inherit;text-decoration:none}
-  .rec img{width:56px;height:56px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.5);flex:0 0 56px}
-  .rec .info{flex:1;min-width:0;font-size:14px}
-  .rec .y{font-size:20px;font-weight:700;color:var(--pri)}
-  .bad{color:var(--bad)!important}
-  .ver{text-align:center;color:var(--mut);font-size:12px;margin:6px 0 0;opacity:.85}
-  .badge{display:inline-block;margin-top:5px;font-size:12px;font-weight:600;color:#b4451f;background:rgba(255,163,107,.3);border:1px solid rgba(255,255,255,.6);border-radius:20px;padding:2px 9px}
-  .today{display:flex;flex-wrap:wrap;gap:8px}
-  .today span{background:rgba(255,255,255,.45);border:1px solid var(--gb);border-radius:12px;padding:6px 10px;font-size:14px}
-  .modal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,40,35,.3);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  table.t th{text-align:left;color:var(--tx-3);font-weight:500;padding:6px 4px;border-bottom:1px solid var(--bd)}
+  table.t td{padding:7px 4px;border-bottom:1px solid var(--surface-sub)}
+  table.t td.n,table.t th.n{text-align:right;font-family:var(--mono)}
+  .rec{display:flex;gap:var(--s-100);align-items:center;padding:var(--s-100) 0;border-bottom:1px solid var(--surface-sel);color:inherit;text-decoration:none}
+  .rec:last-child{border-bottom:0}
+  .rec img{width:56px;height:56px;border-radius:var(--r-8);object-fit:cover;background:var(--surface-sub);flex:0 0 56px}
+  .rec .info{flex:1;min-width:0;font-size:14px;line-height:20px}
+  .rec .y{font:500 18px/24px var(--mono);color:var(--tx-brand)}
+  .bad{color:var(--err)!important}
+  .ver{text-align:center;color:var(--tx-3);font-size:12px;line-height:16px;margin:var(--s-200) 0 0}
+  .badge{display:inline-block;margin-top:var(--s-50);font:600 12px/16px var(--font);color:var(--tx-acc);background:var(--acc-sub);border-radius:var(--r-full);padding:2px 10px}
+  .today{display:grid;gap:0}
+  .today>span{display:flex;justify-content:space-between;gap:var(--s-100);padding:var(--s-100) 0;border-bottom:1px solid var(--surface-sel);font-size:14px;line-height:20px}
+  .today>span:last-child{border-bottom:0}
+  .today b{font-family:var(--mono);font-weight:500;color:var(--tx-brand)}
+  .banner{display:flex;gap:var(--s-100);border-radius:var(--r-12);padding:var(--s-200);margin-bottom:var(--s-200);background:var(--info-sub);border:1px solid #A6D5CA;color:var(--info)}
+  .banner .bt{font-weight:600;font-size:14px;line-height:20px}
+  .banner p{margin:2px 0 var(--s-100);color:var(--tx-2);font-size:14px;line-height:20px}
+  .banner .row{margin-top:var(--s-75)}
+  .modal{position:fixed;inset:0;z-index:30;display:none;align-items:flex-end;justify-content:center;background:var(--scrim)}
   .modal.on{display:flex}
-  .modal .card{max-width:420px;width:100%;background:rgba(255,255,255,.72)}
-  .modal ul{margin:8px 0 16px;padding-left:20px;line-height:1.6}
+  .modal .card{max-width:560px;width:100%;margin:0;border:0;border-radius:var(--r-24) var(--r-24) 0 0;padding:var(--s-300) var(--s-300) calc(env(safe-area-inset-bottom) + var(--s-300));max-height:90vh;overflow:auto;animation:up .35s var(--ease)}
+  .modal .card::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--surface-ter);margin:-8px auto var(--s-200)}
+  @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+  .modal ul{margin:var(--s-75) 0 var(--s-200);padding-left:20px;line-height:24px;color:var(--tx-2)}
+  .mhead{text-align:center;margin-bottom:var(--s-200)}
+  .mbadge{width:64px;height:64px;border-radius:50%;background:var(--warn-sub);color:#9F7504;display:flex;align-items:center;justify-content:center;margin:0 auto var(--s-100)}
+  .mbadge .ico{width:32px;height:32px}
+  .center{text-align:center}
+  @media (min-width:600px){.modal{align-items:center}.modal .card{border-radius:var(--r-24);max-width:440px}}
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true">
-  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-  <svg xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <!-- ชิ้นแซลมอน -->
-      <symbol id="i-fillet" viewBox="-60 -40 120 80">
-        <path d="M-55 -12C-35 -38 30 -42 55 -16C60 -6 57 8 48 14C20 36 -32 32 -55 12C-61 5 -61 -6 -55 -12Z" fill="#ff9466"/>
-        <g fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".85">
-          <path d="M-36 -20C-29 -7 -29 8 -38 20"/><path d="M-15 -27C-6 -10 -6 10 -17 27"/>
-          <path d="M7 -29C16 -11 16 11 5 29"/><path d="M28 -24C36 -10 36 8 27 23"/></g>
-      </symbol>
-      <!-- ปลา -->
-      <symbol id="i-fish" viewBox="-70 -30 140 60">
-        <path d="M-45 0C-25 -26 30 -28 52 -4C56 0 56 4 52 6C30 28 -25 26 -45 0Z" fill="#7fa9b8"/>
-        <path d="M-40 0L-66 -20L-60 0L-66 20Z" fill="#5f8a9b"/>
-        <path d="M-20 -10C5 -20 30 -14 45 -4" fill="none" stroke="#f3b08c" stroke-width="5" stroke-linecap="round" opacity=".8"/>
-        <circle cx="38" cy="-4" r="3.5" fill="#1d3a44"/>
-        <g fill="#3f6573" opacity=".6"><circle cx="-5" cy="-12" r="1.8"/><circle cx="8" cy="-15" r="1.8"/><circle cx="20" cy="-13" r="1.8"/><circle cx="2" cy="-6" r="1.8"/></g>
-      </symbol>
-      <!-- มะนาว -->
-      <symbol id="i-lemon" viewBox="-30 -30 60 60">
-        <circle r="27" fill="#ffd54a"/><circle r="22" fill="#fff4b0"/>
-        <g stroke="#ffd54a" stroke-width="2.5"><path d="M0 -22V22M-22 0H22M-15.5 -15.5L15.5 15.5M15.5 -15.5L-15.5 15.5"/></g>
-      </symbol>
-      <!-- ใบชิโซะ -->
-      <symbol id="i-leaf" viewBox="-40 -25 80 50">
-        <path d="M-36 0C-20 -24 22 -26 38 0C22 26 -20 24 -36 0Z" fill="#5fae6e"/>
-        <path d="M-34 0H34M-10 0L4 -14M8 0L20 -12M-10 0L4 14M8 0L20 12" stroke="#d9f2c9" stroke-width="2" fill="none" stroke-linecap="round"/>
-      </symbol>
-      <!-- กุ้ง -->
-      <symbol id="i-shrimp" viewBox="-40 -40 80 80">
-        <path d="M20 -24C-10 -34 -34 -6 -26 18C-22 30 -6 34 4 28C-6 24 -10 12 -4 2C4 -10 18 -10 26 -14Z" fill="#ff8a6b"/>
-        <path d="M-18 -8C-10 -4 -6 2 -6 8M-8 -20C-2 -14 2 -8 2 0M6 -24C8 -18 10 -12 10 -8" stroke="#ffd2c2" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M24 -16C30 -26 34 -32 38 -36M26 -12C32 -16 36 -18 40 -18" stroke="#ff8a6b" stroke-width="2" fill="none" stroke-linecap="round"/>
-      </symbol>
-      <!-- สเต๊ก -->
-      <symbol id="i-steak" viewBox="-40 -30 80 60">
-        <path d="M-34 -6C-30 -26 10 -30 30 -14C40 -4 36 16 20 22C0 30 -30 22 -34 -6Z" fill="#d9655b"/>
-        <path d="M-28 -6C-24 -20 8 -24 24 -12C32 -4 28 12 16 16" fill="none" stroke="#fbe1d4" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="4" cy="2" r="6" fill="#fbe1d4"/>
-      </symbol>
-      <pattern id="ing" width="340" height="340" patternUnits="userSpaceOnUse">
-        <use href="#i-fillet" x="10" y="20" width="110" height="74" transform="rotate(-14 65 57)"/>
-        <use href="#i-lemon" x="200" y="16" width="52" height="52"/>
-        <use href="#i-fish" x="160" y="110" width="150" height="64" transform="rotate(10 235 142)"/>
-        <use href="#i-leaf" x="20" y="150" width="80" height="50" transform="rotate(30 60 175)"/>
-        <use href="#i-shrimp" x="40" y="236" width="76" height="76"/>
-        <use href="#i-steak" x="190" y="240" width="86" height="64" transform="rotate(-10 233 272)"/>
-        <use href="#i-fillet" x="270" y="250" width="70" height="48" transform="rotate(20 305 274)"/>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#ing)" opacity=".42"/>
-  </svg>
-</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-scales" viewBox="0 0 256 256"><path d="M239.43,133l-32-80h0a8,8,0,0,0-9.16-4.84L136,62V40a8,8,0,0,0-16,0V65.58L54.26,80.19A8,8,0,0,0,48.57,85h0v.06L16.57,165a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133ZM56,184c-7.53,0-22.76-3.61-23.93-14.64L56,109.54l23.93,59.82C78.76,180.39,63.53,184,56,184Zm144-32c-7.53,0-22.76-3.61-23.93-14.64L200,77.54l23.93,59.82C222.76,148.39,207.53,152,200,152Z"/></symbol>
+<symbol id="i-camera" viewBox="0 0 256 256"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"/></symbol>
+<symbol id="i-image" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM40,172l52-52,80,80H40Zm176,28H194.63l-36-36,20-20L216,181.38V200ZM144,100a12,12,0,1,1,12,12A12,12,0,0,1,144,100Z"/></symbol>
+<symbol id="i-check-circle" viewBox="0 0 256 256"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></symbol>
+<symbol id="i-warning" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></symbol>
+<symbol id="i-info" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/></symbol>
+<symbol id="i-back" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></symbol>
+<symbol id="i-next" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></symbol>
+<symbol id="i-x" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+<symbol id="i-out" viewBox="0 0 256 256"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></symbol>
+<symbol id="i-history" viewBox="0 0 256 256"><path d="M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/></symbol>
+<symbol id="i-download" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></symbol>
+<symbol id="i-minus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></symbol>
+<symbol id="i-check" viewBox="0 0 256 256"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="i-fish" viewBox="0 0 256 256"><path d="M168,76a12,12,0,1,1-12-12A12,12,0,0,1,168,76Zm48.72,67.64c-19.37,34.9-55.44,53.76-107.24,56.1l-22,51.41A8,8,0,0,1,80.1,256l-.51,0a8,8,0,0,1-7.19-5.78L57.6,198.39,5.8,183.56a8,8,0,0,1-1-15.05l51.41-22c2.35-51.78,21.21-87.84,56.09-107.22,24.75-13.74,52.74-15.84,71.88-15.18,18.64.64,36,4.27,38.86,6a8,8,0,0,1,2.83,2.83c1.69,2.85,5.33,20.21,6,38.85C232.55,90.89,230.46,118.89,216.72,143.64Zm-55.18,29a52.11,52.11,0,0,1-33.4-44.78A52.09,52.09,0,0,1,83.37,94.47q-10.45,23.79-11.3,57.59a8,8,0,0,1-4.85,7.17L31.83,174.37l34.45,9.86a8,8,0,0,1,5.49,5.5l9.84,34.44,15.16-35.4a8,8,0,0,1,7.17-4.84Q137.71,183.12,161.54,172.64ZM212.42,43.57c-14.15-3-64.1-11-100.3,14.75a81.21,81.21,0,0,0-16,15.07,36,36,0,0,0,39.35,38.44,8,8,0,0,1,8.73,8.73,36,36,0,0,0,38.47,39.34,80.81,80.81,0,0,0,15-16C223.42,107.73,215.42,57.74,212.42,43.57Z"/></symbol>
+<symbol id="i-chart" viewBox="0 0 256 256"><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></symbol>
+<symbol id="i-share" viewBox="0 0 256 256"><path d="M176,160a39.89,39.89,0,0,0-28.62,12.09l-46.1-29.63a39.8,39.8,0,0,0,0-28.92l46.1-29.63a40,40,0,1,0-8.66-13.45l-46.1,29.63a40,40,0,1,0,0,55.82l46.1,29.63A40,40,0,1,0,176,160Zm0-128a24,24,0,1,1-24,24A24,24,0,0,1,176,32ZM64,152a24,24,0,1,1,24-24A24,24,0,0,1,64,152Zm112,72a24,24,0,1,1,24-24A24,24,0,0,1,176,224Z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></symbol>
+<symbol id="i-search" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></symbol>
+<symbol id="i-home" viewBox="0 0 256 256"><path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z"/></symbol>
+<symbol id="i-save" viewBox="0 0 256 256"><path d="M219.31,72,184,36.69A15.86,15.86,0,0,0,172.69,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V83.31A15.86,15.86,0,0,0,219.31,72ZM168,208H88V152h80Zm40,0H184V152a16,16,0,0,0-16-16H88a16,16,0,0,0-16,16v56H48V48H172.69L208,83.31ZM160,72a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h56A8,8,0,0,1,160,72Z"/></symbol>
+<symbol id="i-caret" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol>
+</svg>
 <header>
-  <img src="icon.svg" alt="">
-  <h1 id="hTitle">Yield Record</h1>
+  <img class="logo" src="icon.svg" alt="">
+  <div class="ht"><h1 id="hTitle">Yield Record</h1><small id="hSub"></small></div>
   <button id="hBtn" style="display:none"></button>
 </header>
 <main>
 
 <!-- LOGIN -->
 <section class="screen" id="sLogin">
-  <div class="card">
-    <div class="hero"><img src="icon.svg" alt=""><h2>Yield Record</h2><p class="mut">บันทึกรูปและน้ำหนักการตัดแต่งวัตถุดิบ</p></div>
-    <p class="stepttl">เข้าสู่ระบบ</p>
-    <p class="mut">ใส่รหัสที่ได้จากแอดมิน ใส่ครั้งเดียว เครื่องจะจำไว้</p>
-    <div class="field"><input id="inCode" placeholder="รหัสผู้ใช้" autocapitalize="characters" autocomplete="off"></div>
+  <div class="card" style="padding:24px">
+    <div class="hero"><img class="logo" src="icon.svg" alt=""><h2>Yield Record</h2><p>บันทึกการแต่งปลาแซลมอนทีละรอบ<br>ถ่าย 3 รูป กรอกน้ำหนัก แอปคิด Yield ให้</p></div>
+    <div class="field"><label for="inCode">รหัสสาขา</label><input id="inCode" placeholder="ใส่รหัสที่ได้จากแอดมิน" autocapitalize="characters" autocomplete="off">
+    <p class="mut" style="margin:8px 0 0">ใส่ครั้งเดียว เครื่องจะจำไว้<br>ลืมรหัส ติดต่อแอดมินของโซน</p></div>
     <button class="btn" id="btnLogin">เข้าสู่ระบบ</button>
     <p class="warn" id="loginErr"></p>
   </div>
@@ -226,21 +250,23 @@
     <div class="field"><label>ชื่อพนักงาน</label><input id="inName" placeholder="พิมพ์ชื่อ"></div>
     <div class="field" style="margin:0"><label>สาขา</label><select id="inBranch"></select></div>
   </div>
-  <div class="card" id="draftCard" style="display:none;border-color:rgba(242,106,61,.6)">
-    <label>📌 มีรอบที่ทำค้างไว้</label>
-    <p id="draftInfo" style="margin:0 0 12px;font-weight:600"></p>
-    <div class="row"><button class="btn" id="draftGo">ทำต่อ</button><button class="btn sec" id="draftDel">ทิ้ง</button></div>
+  <div class="banner" id="draftCard" style="display:none">
+    <svg class="ico"><use href="#i-info"/></svg>
+    <div style="flex:1;min-width:0"><div class="bt">มีรอบที่ทำค้างไว้</div>
+    <p id="draftInfo"></p>
+    <div class="row"><button class="btn" id="draftGo">ทำต่อ</button><button class="btn sec" id="draftDel">ทิ้งรอบนี้</button></div></div>
   </div>
-  <div class="card">
-    <label>1. เลือกรายการสินค้า</label>
-    <div class="field"><input id="inSearch" placeholder="ค้นหา..."></div>
+  <p class="sect">เลือกสินค้าเพื่อเริ่มรอบใหม่</p>
+  <div>
+    <div class="field" id="searchWrap"><input id="inSearch" placeholder="ค้นหาสินค้า" aria-label="ค้นหาสินค้า"></div>
     <div class="plist" id="pList"></div>
     <p class="mut" id="pEmpty" style="display:none">ยังไม่มีสินค้า แอดมินเพิ่มได้ในแท็บ Products</p>
   </div>
-  <button class="btn sec" id="btnHist" style="margin-bottom:14px">📝 ประวัติ / แก้ไข</button>
-  <button class="btn sec" id="btnAdmin" style="display:none;margin-bottom:14px">📊 สรุป Yield สาขา (แอดมิน)</button>
+  <div style="height:16px"></div>
+  <button class="btn ghost" id="btnHist" style="margin-bottom:8px"><svg class="ico"><use href="#i-history"/></svg>ประวัติ และแก้ไขรายการ</button>
+  <button class="btn sec" id="btnAdmin" style="display:none;margin-bottom:16px"><svg class="ico"><use href="#i-chart"/></svg>สรุป Yield สาขา (แอดมิน)</button>
   <div class="card" id="todayCard" style="display:none">
-    <label>บันทึกวันนี้ของสาขา</label>
+    <label>วันนี้ของสาขา</label>
     <div class="today" id="todayList"></div>
   </div>
   <p class="ver vtxt"></p>
@@ -248,19 +274,18 @@
 
 <!-- CAPTURE -->
 <section class="screen" id="sCap">
-  <div class="stepbar" id="stepBar"></div>
-  <div class="card">
-    <p class="mut" id="capCount"></p>
+  <div class="track" id="track"></div>
+  <div>
     <p class="stepttl" id="capTitle"></p>
+    <p class="mut" id="capCount" style="margin:0"></p>
     <div class="preview" id="capPrev"></div>
-    <div class="row">
-      <button class="btn" id="btnCam">📷 ถ่ายรูป</button>
-      <button class="btn sec" id="btnGal">🖼 แกลเลอรี</button>
-    </div>
+    <div class="stepbar" id="stepBar"></div>
+    <button class="btn" id="btnCam"><svg class="ico"><use href="#i-camera"/></svg>ถ่ายรูป</button>
+    <button class="btn sec" id="btnGal"><svg class="ico"><use href="#i-image"/></svg>เลือกจากคลังภาพ</button>
     <p class="mut" id="galHint" style="margin:8px 0 0;text-align:center"></p>
     <div class="row" style="margin-top:10px">
       <button class="btn ghost" id="btnSkip">ข้ามขั้นนี้</button>
-      <button class="btn sec" id="btnNext">ถัดไป →</button>
+      <button class="btn sec" id="btnNext">ถัดไป<svg class="ico"><use href="#i-next"/></svg></button>
     </div>
     <input type="file" id="fCam" accept="image/*" capture="environment">
     <input type="file" id="fGal" accept="image/*" multiple>
@@ -270,15 +295,15 @@
 <!-- WEIGHT -->
 <section class="screen" id="sW">
   <div class="card">
-    <p class="stepttl">ตรวจน้ำหนักก่อนบันทึก (kg)</p>
+    <p class="stepttl" style="margin-bottom:16px">ตรวจตัวเลขก่อนบันทึก</p>
     <div id="wForm"></div>
   </div>
   <div class="card">
-    <label>ตัวอย่างรูปที่จะบันทึก</label>
+    <label>รูปคอลลาจที่จะบันทึก</label>
     <img id="collagePrev" alt="">
   </div>
-  <button class="btn" id="btnSave">💾 บันทึก</button>
-  <button class="btn ghost" id="btnBackCap" style="margin-top:6px">← กลับไปแก้รูป</button>
+  <button class="btn" id="btnSave"><svg class="ico"><use href="#i-check"/></svg>บันทึกรอบนี้</button>
+  <button class="btn ghost" id="btnBackCap"><svg class="ico"><use href="#i-back"/></svg>กลับไปแก้รูป</button>
 </section>
 
 <!-- SUMMARY (admin) -->
@@ -297,7 +322,7 @@
       <div class="field"><label>ตั้งแต่</label><input type="date" id="sumFrom"></div>
       <div class="field"><label>ถึง</label><input type="date" id="sumTo"></div>
     </div>
-    <button class="btn" id="btnSumGo">🔍 ดูสรุป</button>
+    <button class="btn" id="btnSumGo"><svg class="ico"><use href="#i-search"/></svg>ดูสรุป</button>
   </div>
   <div id="sumOut" style="display:none">
     <p class="mut" id="sumTitle" style="margin:0 4px 10px;font-weight:600"></p>
@@ -307,8 +332,8 @@
       <div id="sumList"></div>
     </div>
     <div class="row">
-      <button class="btn" id="btnSumShare">📤 แชร์รูปสรุป</button>
-      <button class="btn sec" id="btnSumText">📋 คัดลอกข้อความ</button>
+      <button class="btn" id="btnSumShare"><svg class="ico"><use href="#i-share"/></svg>แชร์รูปสรุป</button>
+      <button class="btn sec" id="btnSumText"><svg class="ico"><use href="#i-copy"/></svg>คัดลอกข้อความ</button>
     </div>
   </div>
 </section>
@@ -340,14 +365,14 @@
     <div class="field"><label>ชื่อพนักงาน</label><input id="eName"></div>
     <div id="eForm"></div>
   </div>
-  <button class="btn" id="btnEditSave">💾 บันทึกการแก้ไข</button>
+  <button class="btn" id="btnEditSave"><svg class="ico"><use href="#i-check"/></svg>บันทึกการแก้ไข</button>
 </section>
 
 <!-- DONE -->
 <section class="screen" id="sDone">
   <div class="card">
-    <div class="ok">✅</div>
-    <p class="stepttl" style="text-align:center">บันทึกสำเร็จ</p>
+    <div class="okb"><svg class="ico"><use href="#i-check-circle"/></svg></div>
+    <p class="stepttl" style="text-align:center;font-size:30px;line-height:40px;font-weight:400">บันทึกแล้ว</p>
     <p class="mut" style="text-align:center" id="doneInfo"></p>
     <div class="res" style="margin-top:12px">
       <div class="big"><span>Yield</span><b id="dYield"></b></div>
@@ -355,18 +380,18 @@
       <div><span class="mut">Loss</span><b id="dLoss"></b></div>
     </div>
   </div>
-  <button class="btn sec" id="btnSaveImg" style="margin-bottom:10px">💾 เซฟรูปลงเครื่อง</button>
-  <button class="btn" id="btnPiece">+ ถ่ายรอบถัดไป</button>
-  <button class="btn sec" id="btnNew" style="margin-top:10px">🏠 กลับหน้าหลัก</button>
+  <button class="btn sec" id="btnSaveImg"><svg class="ico"><use href="#i-download"/></svg>เซฟรูปคอลลาจลงเครื่อง</button>
+  <button class="btn" id="btnPiece"><svg class="ico"><use href="#i-next"/></svg>เริ่มรอบถัดไป</button>
+  <button class="btn ghost" id="btnNew">กลับหน้าหลัก</button>
 </section>
 
 </main>
 <div class="modal" id="cntModal"><div class="card">
-  <p class="stepttl" id="cntTitle">รอบนี้มีกี่ฟิลเลย์?</p>
-  <p class="mut" id="cntSub"></p>
-  <div class="stepper" style="justify-content:center;margin:14px 0 18px"><button type="button" id="cntMinus">−</button><b id="cntVal" style="font-size:40px;min-width:60px">1</b><button type="button" id="cntPlus">+</button></div>
-  <button class="btn" id="cntOk">เริ่มถ่ายรูป</button>
-  <button class="btn ghost" id="cntCancel" style="margin-top:6px">ยกเลิก</button>
+  <div class="mhead"><p class="stepttl" id="cntTitle">รอบนี้มีกี่ฟิลเลย์</p>
+  <p class="mut" id="cntSub" style="margin:0"></p></div>
+  <div class="stepper" style="justify-content:center;margin:0 0 24px"><button type="button" id="cntMinus" aria-label="ลด"><svg class="ico"><use href="#i-minus"/></svg></button><b id="cntVal">1</b><button type="button" id="cntPlus" aria-label="เพิ่ม"><svg class="ico"><use href="#i-plus"/></svg></button></div>
+  <button class="btn" id="cntOk"><svg class="ico"><use href="#i-camera"/></svg>เริ่มถ่ายรูป</button>
+  <button class="btn ghost" id="cntCancel">ยกเลิก</button>
 </div></div>
 <div class="modal" id="wtModal"><div class="card">
   <p class="stepttl" id="wtTitle"></p>
@@ -374,17 +399,17 @@
   <div id="wtFields"></div>
   <p class="warn" id="wtWarn"></p>
   <button class="btn" id="wtOk" disabled>ยืนยันน้ำหนัก</button>
-  <button class="btn ghost" id="wtLater" style="margin-top:6px">กรอกทีหลัง</button>
+  <button class="btn ghost" id="wtLater">กรอกทีหลัง</button>
 </div></div>
 <div class="modal" id="scaleModal"><div class="card">
-  <p class="stepttl">⚖️ เช็กตราชั่งก่อนกรอก</p>
+  <div class="mhead"><div class="mbadge"><svg class="ico"><use href="#i-scales"/></svg></div><p class="stepttl">เช็กตราชั่งก่อนชั่ง</p></div>
   <label class="chk"><input type="checkbox" id="sc1"> ตั้งศูนย์ (Tare) แล้ว</label>
   <label class="chk"><input type="checkbox" id="sc2"> ตราชั่งแสดงหน่วยเป็น kg</label>
-  <p class="mut">แอปรับน้ำหนักเป็นกิโลกรัมเท่านั้น เช่น 1.515</p>
-  <button class="btn" id="scOk" disabled>เริ่มกรอกน้ำหนัก</button>
+  <p class="mut" style="margin:8px 0 16px">แอปรับน้ำหนักเป็น kg เท่านั้น เช่น 1.515</p>
+  <button class="btn" id="scOk" disabled>ตั้งศูนย์แล้ว ชั่งเลย</button>
 </div></div>
 <div class="modal" id="verModal"><div class="card">
-  <p class="stepttl">🎉 อัปเดตแล้ว</p>
+  <p class="stepttl">แอปอัปเดตแล้ว</p>
   <p class="mut" id="verTitle"></p>
   <ul id="verList"></ul>
   <button class="btn" id="verOk">ตกลง</button>
@@ -396,8 +421,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.3.0';
 const CHANGELOG = {
+  '2.3.0': ['ไอคอนแอปใหม่', 'หน้าตาแอปใหม่ ตัวอักษรใหญ่ขึ้น อ่านง่ายขึ้นในครัว ปุ่มใหญ่ กดง่ายแม้มือเปียก', 'หน้าถ่ายรูปบอกชัดว่าอยู่ขั้นไหน และเห็นรูปที่ถ่ายแล้วทั้ง 3 ช่อง', 'หน้าต่างกรอกน้ำหนักเลื่อนขึ้นจากด้านล่าง กดใช้ด้วยมือเดียวได้', 'การทำงานเหมือนเดิมทุกอย่าง ข้อมูลเดิมไม่หาย'],
   '2.2.0': ['เลือกรูปจากแกลเลอรีได้หลายรูปในครั้งเดียว แอปเรียงให้ตามลำดับ ป้ายล็อต → หนังเทา → เนื้อพร้อมใช้', 'เวลาบนรูปอ่านจากเวลาถ่ายจริงในไฟล์รูป', 'ปิดแอปกลางคันได้ รอบที่ทำค้างจะเก็บไว้ในเครื่อง เปิดมาทำต่อได้', 'ฟิลเลย์ได้สูงสุด 15 ชิ้น และกรอกน้ำหนักป้ายเป็นยอดรวมได้', 'กันบันทึกซ้ำ และแอปอัปเดตเป็นเวอร์ชันล่าสุดเอง'],
   '2.1.0': ['เลือกจำนวนฟิลเลย์ก่อนเริ่มถ่ายรูป', 'ถ่ายหรือเลือกรูปเสร็จ จะมีหน้าต่างให้กรอกน้ำหนักของรูปนั้นทันที', 'น้ำหนักฟิลเลย์ใช้ตามป้ายล็อตอย่างเดียว ส่วนหนังเทากับเนื้อพร้อมใช้ใช้น้ำหนักชั่งจริง', 'เช็กตราชั่งก่อนกรอกน้ำหนักหนังเทาของแต่ละรอบ'],
   '2.0.0': ['นับเป็น "รอบที่" แทน "ฟิลเลย์ที่" เลขรอบออกจาก Sheet จึงไม่ซ้ำกันแม้ใช้หลายเครื่อง', 'ระบุจำนวนฟิลเลย์ต่อรอบได้ สูงสุด 6 ฟิลเลย์ แล้วกรอกน้ำหนักตามป้ายกับชั่งจริงแยกทีละฟิลเลย์', 'น้ำหนักใช้ kg อย่างเดียว ก่อนกรอกจะมีหน้าต่างให้เช็กตราชั่งทุกรอบ', 'ต้องถ่ายครบ 3 รูป: ป้ายล็อต (ทุกฟิลเลย์ในรูปเดียว) หนังเทา และเนื้อพร้อมใช้', 'คอลลาจบอกรอบ จำนวนฟิลเลย์ น้ำหนักแต่ละฟิลเลย์ หนังเทา และ Loss เป็น kg'],
@@ -418,16 +444,23 @@ const ROLES = ['before', 'waste', 'after'];
 const pad = n => String(n).padStart(2, '0');
 const fmtDT = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const f2 = v => (isFinite(v) ? Number(v).toFixed(2) : '-');
-function show(id, title, btn) {
+const ic = (n, c) => `<svg class="ico${c ? ' ' + c : ''}"><use href="#i-${n}"/></svg>`;
+function show(id, title, btn, sub) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
   $('hTitle').textContent = title || 'Yield Record';
+  $('hSub').textContent = sub || '';
   const hb = $('hBtn');
-  if (btn) { hb.style.display = ''; hb.textContent = btn.text; hb.onclick = btn.fn; } else hb.style.display = 'none';
+  if (btn) {
+    hb.style.display = '';
+    const t = btn.text.replace(/^[←✕]\s*/, '');
+    const n = /^←/.test(btn.text) ? 'back' : /^✕/.test(btn.text) ? 'x' : t === 'ออก' ? 'out' : '';
+    hb.innerHTML = (n ? ic(n) : '') + `<span>${t}</span>`; hb.setAttribute('aria-label', t); hb.onclick = btn.fn;
+  } else hb.style.display = 'none';
   window.scrollTo(0, 0);
 }
 const loaderHTML = txt => `<svg viewBox="0 0 200 140" aria-hidden="true">
   <defs>
-    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f7584"/><stop offset=".42" stop-color="#ff936b"/><stop offset="1" stop-color="#ffe1d2"/></linearGradient>
+    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f7584"/><stop offset=".42" stop-color="#F58763"/><stop offset="1" stop-color="#FDECE6"/></linearGradient>
     <clipPath id="above"><rect x="-20" y="-40" width="240" height="160"/></clipPath>
   </defs>
   <g clip-path="url(#above)"><g class="fish">
@@ -442,7 +475,7 @@ const loaderHTML = txt => `<svg viewBox="0 0 200 140" aria-hidden="true">
   </g></g>
   <ellipse class="spl s1" cx="50" cy="121" rx="16" ry="5"/>
   <ellipse class="spl s2" cx="150" cy="121" rx="16" ry="5"/>
-  <g class="wave"><path d="M-40 122 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V140 H-40Z" fill="#3cc0a3" opacity=".75"/></g>
+  <g class="wave"><path d="M-40 122 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V140 H-40Z" fill="#53AE99" opacity=".8"/></g>
 </svg><span>${txt || 'กำลังโหลด...'}</span>`;
 function busy(on, txt) { $('ovl').classList.toggle('on', on); if (on) $('ovlLoader').innerHTML = loaderHTML(txt); }
 
@@ -490,11 +523,12 @@ async function loadToday() {
 function renderToday() {
   const items = Object.entries(TODAY);
   $('todayCard').style.display = items.length ? '' : 'none';
-  $('todayList').innerHTML = items.map(([p, t]) => `<span>${prodIcon(p)} ${esc(p)} <b>${t.r}</b> รอบ • ${t.f} ฟิลเลย์</span>`).join('');
+  $('todayList').innerHTML = items.map(([p, t]) => `<span><span>${esc(p)}</span><span><b>${t.r}</b> รอบ · ${t.f} ฟิลเลย์</span></span>`).join('');
 }
 
 /* ---------- home ---------- */
-function goHome() { if (pendingVer) return doUpdate(pendingVer); renderHome(); checkDraft(); show('sHome', 'Yield Record', { text: 'ออก', fn: () => logout() }); }
+function homeSub() { const n = localStorage.getItem(LS.name) || '', b = $('inBranch').value; return [n, b ? 'สาขา ' + b : ''].filter(Boolean).join(' · '); }
+function goHome() { if (pendingVer) return doUpdate(pendingVer); renderHome(); checkDraft(); show('sHome', 'Yield Record', { text: 'ออก', fn: () => logout() }, homeSub()); }
 function renderHome() {
   $('inName').value = localStorage.getItem(LS.name) || $('inName').value;
   const sel = $('inBranch'), saved = localStorage.getItem(LS.branch);
@@ -510,7 +544,7 @@ function renderProducts() {
   const br = $('inBranch').value;
   $('pList').innerHTML = list.map(p => {
     const t = TODAY[p.name];
-    return `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${prodIcon(p.name)}</span><span>${esc(p.name)}<small>${p.steps.map(esc).join(' › ')}</small>${t ? `<span class="badge">วันนี้ ${t.r} รอบ</span>` : ''}</span></button>`;
+    return `<button class="pbtn" data-i="${cfg.products.indexOf(p)}"><span class="ic">${ic('fish')}</span><span class="txt">${esc(p.name)}<small>${p.steps.map(esc).join(' › ')}</small>${t ? `<span class="badge">วันนี้ ${t.r} รอบ</span>` : ''}</span><span class="go">${ic('next', 'sm')}</span></button>`;
   }).join('');
 }
 const ICONS = [[/แซลมอน|salmon/i,'🍣'],[/ปลา|fish|ทูน่า|tuna|ซาบะ/i,'🐟'],[/กุ้ง|shrimp|prawn/i,'🦐'],[/ปู|crab/i,'🦀'],[/หมึก|squid|octopus/i,'🦑'],[/หอย|shell|oyster/i,'🦪'],
@@ -519,8 +553,8 @@ const ICONS = [[/แซลมอน|salmon/i,'🍣'],[/ปลา|fish|ทูน�
 function prodIcon(n) { for (const [re, ic] of ICONS) if (re.test(n)) return ic; return '🔪'; }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 $('inSearch').oninput = renderProducts;
-$('inName').onchange = () => localStorage.setItem(LS.name, $('inName').value.trim());
-$('inBranch').onchange = () => { localStorage.setItem(LS.branch, $('inBranch').value); TODAY = {}; renderProducts(); renderToday(); loadToday(); };
+$('inName').onchange = () => { localStorage.setItem(LS.name, $('inName').value.trim()); $('hSub').textContent = homeSub(); };
+$('inBranch').onchange = () => { localStorage.setItem(LS.branch, $('inBranch').value); $('hSub').textContent = homeSub(); TODAY = {}; renderProducts(); renderToday(); loadToday(); };
 $('pList').onclick = e => {
   const b = e.target.closest('.pbtn'); if (!b) return;
   const name = $('inName').value.trim();
@@ -534,7 +568,8 @@ async function nextRound(branch, product) {
   try { const r = await api({ action: 'nextround', code: localStorage.getItem(LS.code), branch, product }); if (r.ok && r.round) return r.round; } catch (_) {}
   return (TODAY[product] ? TODAY[product].r : 0) + 1;
 }
-const capTitle = () => `${S.product} • รอบที่ ${S.round} • ${S.w ? S.w.n : S.n} ฟิลเลย์`;
+const capTitle = () => `${S.product} · รอบที่ ${S.round}`;
+const capSub = () => `ฟิลเลย์ ${S.w ? S.w.n : S.n} ชิ้น · สาขา ${S.branch}`;
 const cancelBtn = () => ({ text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรอบนี้? รูปและน้ำหนักที่กรอกไว้จะหายหมด')) { S = null; clearDraft(); goHome(); } } });
 /** หน้าต่างเลือกจำนวนฟิลเลย์ คืนค่า null ถ้ายกเลิก */
 function askCount(title, init) {
@@ -567,23 +602,26 @@ async function startRecord(p) {
     cid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
   };
   renderCap();
-  show('sCap', capTitle(), cancelBtn());
+  show('sCap', capTitle(), cancelBtn(), capSub());
   saveDraft();
 }
 function renderCap() {
   const st = S.steps[S.idx], ph = S.photos[S.idx];
-  $('capCount').textContent = `รูปที่ ${S.idx + 1} / ${S.steps.length} • ต้องถ่ายครบทุกรูป` + (S.idx === 0 ? ' • วางป้ายล็อตทุกฟิลเลย์ให้อยู่ในรูปเดียว' : '');
-  $('capTitle').textContent = 'ถ่ายรูป: ' + st.label;
+  $('capCount').textContent = S.idx === 0 ? `วางป้ายของทั้ง ${S.w ? S.w.n : S.n} ฟิลเลย์ให้อยู่ในรูปเดียว ตัวเลขต้องอ่านออก` : `ถ่าย${st.label}บนตราชั่งให้เห็นตัวเลข`;
+  $('capTitle').textContent = `รูปที่ ${S.idx + 1} · ${st.label}`;
   const pv = $('capPrev');
-  pv.style.backgroundImage = ph ? `url(${ph.stamped})` : ''; pv.innerHTML = ph ? '' : '<span style="font-size:46px">📷</span><span>แตะปุ่มด้านล่างเพื่อถ่ายรูป</span>';
-  $('btnCam').textContent = ph ? '📷 ถ่ายใหม่' : '📷 ถ่ายรูป';
+  pv.style.backgroundImage = ph ? `url(${ph.stamped})` : ''; pv.classList.toggle('has', !!ph);
+  pv.innerHTML = ph ? '' : `${ic('camera')}<span>กดปุ่มด้านล่างเพื่อถ่ายรูป</span>`;
+  $('btnCam').innerHTML = ic('camera') + (ph ? 'ถ่ายใหม่' : 'ถ่ายรูป');
+  $('btnCam').className = ph ? 'btn sec' : 'btn';
+  $('track').innerHTML = S.steps.map((s, i) => `<span class="${i === S.idx ? 'cur' : S.photos[i] ? 'done' : ''}"><i>${S.photos[i] && i !== S.idx ? '✓' : i + 1}</i>${esc(s.label)}</span>`).join('');
   $('btnSkip').style.display = 'none';
   $('btnNext').style.display = ph ? '' : 'none';
   const left = S.steps.length - S.idx;
   $('galHint').textContent = left > 1 ? `เลือกจากแกลเลอรีได้หลายรูป เรียงตามนี้: ${S.steps.slice(S.idx).map(x => x.label).join(' → ')}` : '';
   $('stepBar').innerHTML = S.steps.map((s, i) => {
     const p = S.photos[i];
-    return `<div data-i="${i}" class="${i === S.idx ? 'cur' : ''} ${p ? '' : 'empty'}" style="${p ? `background-image:url(${p.stamped})` : ''}">${esc(s.label)}</div>`;
+    return `<div data-i="${i}" role="button" aria-label="${esc(s.label)}" class="${i === S.idx ? 'cur' : ''} ${p ? '' : 'empty'}" style="${p ? `background-image:url(${p.stamped})` : ''}">${p ? '' : ic('camera')}<b>${esc(s.label)}</b></div>`;
   }).join('');
 }
 $('stepBar').onclick = e => { const d = e.target.closest('[data-i]'); if (d) { S.idx = +d.dataset.i; renderCap(); } };
@@ -697,7 +735,7 @@ function WForm(root, names, onChange) {
   const st = { n: 1, mode: 'each', lab: [], total: '', waste: '', after: '' };
   root.innerHTML = `
     <div class="field"><label>จำนวนฟิลเลย์ในรอบนี้</label>
-      <div class="stepper"><button type="button" data-d="-1">−</button><b class="cnt"></b><button type="button" data-d="1">+</button><span class="mut">สูงสุด ${MAX_FILLET} ฟิลเลย์</span></div></div>
+      <div class="stepper"><button type="button" data-d="-1" aria-label="ลด">${ic('minus')}</button><b class="cnt"></b><button type="button" data-d="1" aria-label="เพิ่ม">${ic('plus')}</button><span class="mut">สูงสุด ${MAX_FILLET}</span></div></div>
     <label>น้ำหนักฟิลเลย์ตามป้ายล็อต (kg)</label>
     <div class="msw"></div>
     <div class="flist"></div>
@@ -752,8 +790,8 @@ function calcW(st, names) {
   if (waste > 10) odd.push(`${names[1]} = ${fmtKg(waste)} kg`);
   if (after > 75) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
   const warn = [];
-  if (odd.length) warn.push('⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือนับฟิลเลย์ผิดหรือเปล่า: ' + odd.join(', '));
-  if (before > 0 && after > 0 && loss < -0.0005) warn.push(`⚠️ ${names[1]}รวมกับ${names[2]}หนักกว่าน้ำหนักฟิลเลย์ตามป้าย ลองเช็กอีกครั้ง`);
+  if (odd.length) warn.push('ค่านี้ดูแปลก ใส่เป็นกรัมหรือนับฟิลเลย์ผิดหรือเปล่า: ' + odd.join(', '));
+  if (before > 0 && after > 0 && loss < -0.0005) warn.push(`${names[1]}รวมกับ${names[2]}หนักกว่าน้ำหนักฟิลเลย์ตามป้าย ลองเช็กอีกครั้ง`);
   return { n: st.n, mode: each ? 'each' : 'total', lab, act: [], before, labelTotal: before, waste, after, loss, unit: 'kg', complete, odd, warn,
     yieldPct: before ? after / before * 100 : 0, wastePct: before ? waste / before * 100 : 0, lossPct: before ? loss / before * 100 : 0 };
 }
@@ -791,7 +829,7 @@ async function askWeight(idx) {
         filled = idx === 1 ? String(raw).trim() !== '' : v > 0;
         odd = v > (idx === 1 ? 10 : 75);
       }
-      $('wtWarn').textContent = odd ? '⚠️ ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
+      $('wtWarn').textContent = odd ? 'ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
       $('wtOk').disabled = !filled;
     };
     paint();
@@ -817,9 +855,9 @@ let collageTimer;
 async function goWeight() {
   if (!S.form) S.form = WForm($('wForm'), S.steps.map(x => x.label), calc);
   S.form.set(S.w);
-  show('sW', capTitle(), cancelBtn());
+  show('sW', capTitle(), cancelBtn(), capSub());
 }
-$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', capTitle(), cancelBtn()); };
+$('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', capTitle(), cancelBtn(), capSub()); };
 function calc(v) {
   if (!S || !S.form) return;
   v = v || S.form.get();
@@ -900,7 +938,7 @@ $('btnSave').onclick = async () => {
     if (res.round) S.round = res.round;
     S.lastId = res.id; S.done = true; clearDraft();
     $('doneInfo').textContent = `${S.product} รอบที่ ${S.round} • ${v.n} ฟิลเลย์ • ${S.branch}`;
-    $('btnPiece').textContent = `+ ถ่ายรอบถัดไป: ${S.product}`;
+    $('btnPiece').innerHTML = ic('next') + `เริ่มรอบถัดไป · ${esc(S.product)}`;
     $('dYield').textContent = f2(res.yieldPct) + '%';
     $('dWasteLbl').textContent = S.steps[1].label;
     $('dWaste').textContent = f2(res.wastePct) + '%';
@@ -994,7 +1032,7 @@ function renderSummary() {
   $('sumCards').innerHTML = prods.map(([name, rows]) => {
     const k = calcSum(rows), { byBranch, groups } = groupRows(rows), nm = stepNames(name);
     return `<div class="card">
-      <p class="stepttl" style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="ic" style="font-size:24px">${prodIcon(name)}</span>${esc(name)}</p>
+      <p class="stepttl" style="display:flex;align-items:center;gap:8px;margin-bottom:12px">${esc(name)}</p>
       <div class="kpi">
         <div class="big"><span class="mut">Yield รวม</span><b>${f2(k.y)}%</b><span class="mut">ต่ำสุด ${f2(k.min)}% • สูงสุด ${f2(k.max)}%</span></div>
         <div><span class="mut">จำนวน</span><b>${k.n} รอบ</b><span class="mut">${k.nf} ฟิลเลย์</span></div>
@@ -1007,7 +1045,7 @@ function renderSummary() {
       ${groups.map(([key, rs]) => { const c = calcSum(rs); return `<tr><td>${byBranch ? key : thDate(key)}</td><td class="n">${c.n} (${c.nf})</td><td class="n"><b>${f2(c.y)}%</b></td><td class="n">${f2(c.w)}%</td><td class="n ${c.l > 5 ? 'bad' : ''}">${f2(c.l)}%</td></tr>`; }).join('')}
       </table></div>`;
   }).join('');
-  $('sumList').innerHTML = prods.map(([name, rows]) => `<p class="stepttl" style="font-size:16px;margin:14px 0 2px">${prodIcon(name)} ${esc(name)} <span class="mut">(${rows.length})</span></p>` +
+  $('sumList').innerHTML = prods.map(([name, rows]) => `<p class="stepttl" style="font-size:16px;margin:14px 0 2px">${esc(name)} <span class="mut">(${rows.length})</span></p>` +
     rows.slice().reverse().map(r => `<a class="rec" href="${esc(r.url)}" target="_blank" rel="noopener">
       <img loading="lazy" src="${r.fileId ? `https://drive.google.com/thumbnail?id=${r.fileId}&sz=w200` : ''}" alt="">
       <div class="info"><b>${esc(r.branch)}</b>${r.round ? ' • รอบที่ ' + r.round : ''} • ${r.filletCount || 1} ฟิลเลย์<br>
@@ -1111,7 +1149,7 @@ async function loadHist() {
     if (!E.list.length) { $('histList').innerHTML = '<p class="mut">ยังไม่มีรายการในช่วงนี้</p>'; return; }
     $('histList').innerHTML = E.list.map((r, i) => `<a class="rec" href="#" data-i="${i}">
       <img loading="lazy" src="${r.fileId ? `https://drive.google.com/thumbnail?id=${r.fileId}&sz=w200` : ''}" alt="">
-      <div class="info"><b>${prodIcon(r.product)} ${esc(r.product)}</b>${r.round ? ' • รอบที่ ' + r.round : ''} • ${r.filletCount || 1} ฟิลเลย์<br>
+      <div class="info"><b>${esc(r.product)}</b>${r.round ? ' • รอบที่ ' + r.round : ''} • ${r.filletCount || 1} ฟิลเลย์<br>
       <span class="mut">${thDate(r.date)} ${r.time} • ${esc(r.employee)}</span><br>
       <span class="mut">${fmtKg(toKg(r.before, r.unit))} → ${fmtKg(toKg(r.after, r.unit))} kg</span>${r.edited ? `<span class="badge">แก้ไขแล้ว ${r.edited}</span>` : ''}</div>
       <div class="y">${f2(r.yieldPct)}%</div></a>`).join('');
@@ -1132,7 +1170,7 @@ async function openEdit(rec) {
     E.labels = p ? p.steps : ['ป้ายล็อต', 'หนังเทา', 'เนื้อพร้อมใช้'];
     $('eName').value = rec.employee;
     $('editInfo').textContent = `${rec.product}${rec.round ? ' • รอบที่ ' + rec.round : ''} • ${thDate(rec.date)} ${rec.time}`;
-    $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}" style="padding:11px">📷 ${esc(l)}</button>`).join('');
+    $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}">${ic('camera')}${esc(l)}</button>`).join('');
     E.form = WForm($('eForm'), E.labels, calcEdit);
     const nf = rec.filletCount || 1, eachOk = rec.labelKg && rec.labelKg.length === nf;
     E.form.set({ n: nf, mode: eachOk ? 'each' : 'total', lab: eachOk ? rec.labelKg : [], total: toKg(rec.before, rec.unit),
@@ -1235,7 +1273,7 @@ async function resumeDraft(d) {
     S = { prod: d.prod, round: d.round, n: d.n, cid: d.cid, product: d.prod.name, employee: d.employee, branch: d.branch,
       steps: d.steps, photos, idx: Math.min(d.idx || 0, d.steps.length - 1), scaleOk: d.scaleOk, form: null, w: d.w };
     busy(false);
-    renderCap(); show('sCap', capTitle(), cancelBtn());
+    renderCap(); show('sCap', capTitle(), cancelBtn(), capSub());
     if (S.steps.every((_, i) => S.photos[i])) goWeight();
   } catch (e) { busy(false); alert('เปิดรอบที่ค้างไว้ไม่ได้: ' + e.message); }
 }
