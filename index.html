@@ -81,12 +81,11 @@
   .pbtn small{display:block;color:var(--tx-3);font-size:14px;line-height:20px;font-weight:400}
   .pbtn .go{color:#6F6C66}
   /* ---------- capture ---------- */
-  .track{display:flex;gap:var(--s-75);margin-bottom:var(--s-200)}
-  .track span{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-full);padding:var(--s-50) var(--s-75);
-    background:var(--surface-sub);color:var(--tx-2);font:600 12px/16px var(--font);white-space:nowrap;overflow:hidden}
-  .track span i{font-style:normal;width:20px;height:20px;border-radius:50%;background:var(--surface-ter);display:flex;align-items:center;justify-content:center;flex:0 0 20px}
-  .track span.done{background:var(--info-sub);color:var(--tx-brand)}.track span.done i{background:var(--info);color:#fff}
-  .track span.cur{background:var(--info);color:#fff}.track span.cur i{background:#fff;color:var(--tx-brand)}
+  .track{margin-bottom:var(--s-200)}
+  .track .bars{display:flex;gap:var(--s-50)}
+  .track .bars i{flex:1;height:6px;border-radius:var(--r-full);background:var(--surface-ter)}
+  .track .bars i.done{background:#53AE99}.track .bars i.cur{background:var(--info)}
+  .track .tcap{display:flex;justify-content:space-between;margin-top:var(--s-75);font-size:12px;line-height:16px;color:var(--tx-3);font-weight:500}
   .stepbar{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-75);margin:var(--s-100) 0 var(--s-200)}
   .stepbar div{aspect-ratio:1;border-radius:var(--r-12);background:var(--surface-sub) center/cover no-repeat;border:1px solid var(--bd-2);font:600 12px/16px var(--font);
     display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;color:#fff;padding:6px;text-align:center;position:relative;overflow:hidden}
@@ -114,6 +113,11 @@
   .res .big b{font-size:36px;line-height:44px;color:var(--tx-brand)}
   .warn{color:var(--err);font-size:14px;line-height:20px;margin:var(--s-100) 0 0}
   .warn:empty{display:none}
+  .note{margin:var(--s-100) 0 0;font-size:14px;line-height:20px;background:var(--info-sub);color:var(--info);border:1px solid #A6D5CA;border-radius:var(--r-12);padding:var(--s-100) var(--s-200)}
+  .note:empty{display:none}
+  .tag{display:inline-block;margin-left:6px;font:600 12px/16px var(--font);color:var(--tx-3);background:var(--surface-sub);border-radius:var(--r-full);padding:2px 8px;vertical-align:1px}
+  .res{grid-template-columns:1fr 1fr}
+  input[type=date]{font-family:var(--font)}
   p.warn:not(:empty){background:var(--warn-sub);border:1px solid var(--warn-bd);color:var(--warn-tx);border-radius:var(--r-12);padding:var(--s-100) var(--s-200)}
   #loginErr.warn:not(:empty){background:var(--err-sub);border-color:var(--err-bd);color:var(--err)}
   #collagePrev{width:100%;border-radius:var(--r-12);display:block}
@@ -278,6 +282,7 @@
   <div>
     <p class="stepttl" id="capTitle"></p>
     <p class="mut" id="capCount" style="margin:0"></p>
+    <p class="note" id="capDate"></p>
     <div class="preview" id="capPrev"></div>
     <div class="stepbar" id="stepBar"></div>
     <button class="btn" id="btnCam"><svg class="ico"><use href="#i-camera"/></svg>ถ่ายรูป</button>
@@ -296,6 +301,7 @@
 <section class="screen" id="sW">
   <div class="card">
     <p class="stepttl" style="margin-bottom:16px">ตรวจตัวเลขก่อนบันทึก</p>
+    <div class="field"><label for="inRecDate">วันที่ของรอบนี้</label><input type="date" id="inRecDate"><p class="mut" id="recDateNote" style="margin:8px 0 0"></p></div>
     <div id="wForm"></div>
   </div>
   <div class="card">
@@ -421,8 +427,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwUeG5DGCjJJIdYMNxIsQX6ySKy4VtYP4ywmkaX_FyK8c5aIKfgUje4nuNM64m9XDrp/exec';
 /* ============================================================ */
 
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 const CHANGELOG = {
+  '2.4.0': ['ถ่าย 4 รูป: ป้ายล็อต > น้ำหนักรวมก่อนแล่ > หนังเทา > เนื้อพร้อมใช้', 'Yield คิดจากน้ำหนักรวมก่อนแล่ที่ชั่งจริง ป้ายล็อตเก็บไว้ดูอ้างอิง', 'ใส่ข้อมูลย้อนหลังได้: เลือกรูปจากคลังภาพ แอปลงวันที่ตามเวลาในรูป แก้วันที่ได้ในหน้าตรวจตัวเลข'],
   '2.3.0': ['ไอคอนแอปใหม่', 'หน้าตาแอปใหม่ ตัวอักษรใหญ่ขึ้น อ่านง่ายขึ้นในครัว ปุ่มใหญ่ กดง่ายแม้มือเปียก', 'หน้าถ่ายรูปบอกชัดว่าอยู่ขั้นไหน และเห็นรูปที่ถ่ายแล้วทั้ง 3 ช่อง', 'หน้าต่างกรอกน้ำหนักเลื่อนขึ้นจากด้านล่าง กดใช้ด้วยมือเดียวได้', 'การทำงานเหมือนเดิมทุกอย่าง ข้อมูลเดิมไม่หาย'],
   '2.2.0': ['เลือกรูปจากแกลเลอรีได้หลายรูปในครั้งเดียว แอปเรียงให้ตามลำดับ ป้ายล็อต → หนังเทา → เนื้อพร้อมใช้', 'เวลาบนรูปอ่านจากเวลาถ่ายจริงในไฟล์รูป', 'ปิดแอปกลางคันได้ รอบที่ทำค้างจะเก็บไว้ในเครื่อง เปิดมาทำต่อได้', 'ฟิลเลย์ได้สูงสุด 15 ชิ้น และกรอกน้ำหนักป้ายเป็นยอดรวมได้', 'กันบันทึกซ้ำ และแอปอัปเดตเป็นเวอร์ชันล่าสุดเอง'],
   '2.1.0': ['เลือกจำนวนฟิลเลย์ก่อนเริ่มถ่ายรูป', 'ถ่ายหรือเลือกรูปเสร็จ จะมีหน้าต่างให้กรอกน้ำหนักของรูปนั้นทันที', 'น้ำหนักฟิลเลย์ใช้ตามป้ายล็อตอย่างเดียว ส่วนหนังเทากับเนื้อพร้อมใช้ใช้น้ำหนักชั่งจริง', 'เช็กตราชั่งก่อนกรอกน้ำหนักหนังเทาของแต่ละรอบ'],
@@ -438,10 +445,19 @@ const $ = id => document.getElementById(id);
 const LS = { ver: 'yr_ver', count: 'yr_count', code: 'yr_code', cfg: 'yr_cfg', name: 'yr_name', branch: 'yr_branch', unit: 'yr_unit' };
 let cfg = null;
 let S = null; // บันทึกที่กำลังทำ
-const ROLES = ['before', 'waste', 'after'];
+const ROLES = ['lot', 'pre', 'waste', 'after'];
+const PRE_LABEL = 'น้ำหนักรวมก่อนแล่';
+/** ขั้นถ่ายรูป 4 ขั้น: ป้ายล็อต (อ้างอิง) > น้ำหนักรวมก่อนแล่ > หนังเทา > เนื้อพร้อมใช้ */
+const buildSteps = p => [
+  { label: p.steps[0], short: p.steps[0], role: 'lot' }, { label: PRE_LABEL, short: 'ก่อนแล่', role: 'pre' },
+  { label: p.steps[1], short: p.steps[1], role: 'waste' }, { label: p.steps[2], short: p.steps[2], role: 'after' }];
+const namesOf = steps => ({ lot: steps[0].label, pre: steps[1].label, waste: steps[2].label, after: steps[3].label });
+const prodNames = name => { const st = stepNames(name); return { lot: st[0], pre: PRE_LABEL, waste: st[1], after: st[2] }; };
+const BACK_DAYS = 60;
 
 /* ---------- utils ---------- */
 const pad = n => String(n).padStart(2, '0');
+const isoDay = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fmtDT = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const f2 = v => (isFinite(v) ? Number(v).toFixed(2) : '-');
 const ic = (n, c) => `<svg class="ico${c ? ' ' + c : ''}"><use href="#i-${n}"/></svg>`;
@@ -564,10 +580,25 @@ $('pList').onclick = e => {
 };
 
 /* ---------- capture ---------- */
-async function nextRound(branch, product) {
-  try { const r = await api({ action: 'nextround', code: localStorage.getItem(LS.code), branch, product }); if (r.ok && r.round) return r.round; } catch (_) {}
-  return (TODAY[product] ? TODAY[product].r : 0) + 1;
+async function nextRound(branch, product, date) {
+  const today = isoDay(new Date()), q = { action: 'nextround', code: localStorage.getItem(LS.code), branch, product };
+  if (date && date !== today) q.date = date;
+  try { const r = await api(q); if (r.ok && r.round) return r.round; } catch (_) {}
+  return date && date !== today ? 1 : (TODAY[product] ? TODAY[product].r : 0) + 1;
 }
+/** วันที่ของรอบ: ใช้วันที่ในรูปที่เลือกจากคลังภาพ (เก่าสุด) ถ้าผู้ใช้ยังไม่ได้เลือกเอง */
+function autoDate() {
+  if (!S || S.dateManual) return;
+  const ts = S.photos.filter(p => p && p.src !== 'camera').map(p => +p.ts);
+  const d = ts.length ? isoDay(new Date(Math.min(...ts))) : isoDay(new Date());
+  S.recDate = clampDate(d);
+}
+function clampDate(d) {
+  const max = isoDay(new Date()), min = isoDay(new Date(Date.now() - (BACK_DAYS - 1) * 864e5));
+  return !d || d > max ? max : d < min ? min : d;
+}
+const isBack = () => S && S.recDate && S.recDate !== isoDay(new Date());
+function photoDays() { return [...new Set(S.photos.filter(Boolean).map(p => isoDay(p.ts)))]; }
 const capTitle = () => `${S.product} · รอบที่ ${S.round}`;
 const capSub = () => `ฟิลเลย์ ${S.w ? S.w.n : S.n} ชิ้น · สาขา ${S.branch}`;
 const cancelBtn = () => ({ text: '✕ ยกเลิก', fn: () => { if (confirm('ยกเลิกรอบนี้? รูปและน้ำหนักที่กรอกไว้จะหายหมด')) { S = null; clearDraft(); goHome(); } } });
@@ -597,8 +628,8 @@ async function startRecord(p) {
   if (!n) return;
   S = {
     prod: p, round, n, product: p.name, employee: $('inName').value.trim(), branch,
-    steps: p.steps.map((l, i) => ({ label: l, role: ROLES[i] })), photos: [], idx: 0, scaleOk: false, form: null,
-    w: { n, mode: 'each', lab: [], total: '', waste: '', after: '' },
+    steps: buildSteps(p), photos: [], idx: 0, scaleOk: false, form: null,
+    w: { n, mode: 'each', lab: [], total: '', pre: '', waste: '', after: '' }, recDate: isoDay(new Date()), dateManual: false,
     cid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
   };
   renderCap();
@@ -607,21 +638,30 @@ async function startRecord(p) {
 }
 function renderCap() {
   const st = S.steps[S.idx], ph = S.photos[S.idx];
-  $('capCount').textContent = S.idx === 0 ? `วางป้ายของทั้ง ${S.w ? S.w.n : S.n} ฟิลเลย์ให้อยู่ในรูปเดียว ตัวเลขต้องอ่านออก` : `ถ่าย${st.label}บนตราชั่งให้เห็นตัวเลข`;
+  const nF = S.w ? S.w.n : S.n;
+  $('capCount').textContent = st.role === 'lot' ? `วางป้ายของทั้ง ${nF} ฟิลเลย์ให้อยู่ในรูปเดียว ตัวเลขต้องอ่านออก (ใช้อ้างอิง ไม่นำไปคำนวณ)`
+    : st.role === 'pre' ? `วางฟิลเลย์ทั้ง ${nF} ชิ้นบนตราชั่งก่อนแล่ ถ่ายให้เห็นตัวเลข` : `ถ่าย${st.label}บนตราชั่งให้เห็นตัวเลข`;
+  autoDate();
+  const days = photoDays();
+  $('capDate').innerHTML = isBack() ? `<b>บันทึกย้อนหลัง</b> · ลงวันที่ ${thDate(S.recDate)} ตามเวลาในรูป แก้วันที่ได้ในหน้าตรวจตัวเลข` + (days.length > 1 ? '<br>รูปถ่ายคนละวัน เช็กว่าเป็นรอบเดียวกัน' : '')
+    : days.length > 1 ? 'รูปถ่ายคนละวัน เช็กว่าเป็นรอบเดียวกัน' : '';
   $('capTitle').textContent = `รูปที่ ${S.idx + 1} · ${st.label}`;
   const pv = $('capPrev');
   pv.style.backgroundImage = ph ? `url(${ph.stamped})` : ''; pv.classList.toggle('has', !!ph);
   pv.innerHTML = ph ? '' : `${ic('camera')}<span>กดปุ่มด้านล่างเพื่อถ่ายรูป</span>`;
   $('btnCam').innerHTML = ic('camera') + (ph ? 'ถ่ายใหม่' : 'ถ่ายรูป');
   $('btnCam').className = ph ? 'btn sec' : 'btn';
-  $('track').innerHTML = S.steps.map((s, i) => `<span class="${i === S.idx ? 'cur' : S.photos[i] ? 'done' : ''}"><i>${S.photos[i] && i !== S.idx ? '✓' : i + 1}</i>${esc(s.label)}</span>`).join('');
+  const got = S.photos.filter(Boolean).length;
+  $('track').innerHTML = `<div class="bars">${S.steps.map((s, i) => `<i class="${i === S.idx ? 'cur' : S.photos[i] ? 'done' : ''}"></i>`).join('')}</div>`
+    + `<div class="tcap"><span>ขั้นที่ ${S.idx + 1} จาก ${S.steps.length}</span><span>ถ่ายแล้ว ${got}/${S.steps.length} รูป</span></div>`;
   $('btnSkip').style.display = 'none';
   $('btnNext').style.display = ph ? '' : 'none';
   const left = S.steps.length - S.idx;
-  $('galHint').textContent = left > 1 ? `เลือกจากแกลเลอรีได้หลายรูป เรียงตามนี้: ${S.steps.slice(S.idx).map(x => x.label).join(' → ')}` : '';
+  $('galHint').textContent = left > 1 ? `ใส่ข้อมูลย้อนหลังได้ เลือกจากคลังภาพทีละหลายรูป เรียงตามนี้: ${S.steps.slice(S.idx).map(x => x.short || x.label).join(' → ')}` : '';
+  $('stepBar').style.gridTemplateColumns = `repeat(${S.steps.length},1fr)`;
   $('stepBar').innerHTML = S.steps.map((s, i) => {
     const p = S.photos[i];
-    return `<div data-i="${i}" role="button" aria-label="${esc(s.label)}" class="${i === S.idx ? 'cur' : ''} ${p ? '' : 'empty'}" style="${p ? `background-image:url(${p.stamped})` : ''}">${p ? '' : ic('camera')}<b>${esc(s.label)}</b></div>`;
+    return `<div data-i="${i}" role="button" aria-label="${esc(s.label)}" class="${i === S.idx ? 'cur' : ''} ${p ? '' : 'empty'}" style="${p ? `background-image:url(${p.stamped})` : ''}">${p ? '' : ic('camera')}<b>${esc(s.short || s.label)}</b></div>`;
   }).join('');
 }
 $('stepBar').onclick = e => { const d = e.target.closest('[data-i]'); if (d) { S.idx = +d.dataset.i; renderCap(); } };
@@ -731,21 +771,23 @@ const modeSw = mode => `<div class="unit modesw"><button type="button" data-m="e
 const labRows = (st, n) => st.mode === 'total'
   ? `<div class="frow"><span>รวม ${n} ฟิลเลย์</span><input data-t="1" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.total || '')}"></div>`
   : Array.from({ length: n }, (_, i) => `<div class="frow"><span>ฟิลเลย์ ${i + 1}</span><input data-i="${i}" type="text" inputmode="decimal" placeholder="0.000" value="${esc(st.lab[i] || '')}"></div>`).join('');
-function WForm(root, names, onChange) {
-  const st = { n: 1, mode: 'each', lab: [], total: '', waste: '', after: '' };
+function WForm(root, N, onChange) {
+  const st = { n: 1, mode: 'each', lab: [], total: '', pre: '', waste: '', after: '' };
   root.innerHTML = `
     <div class="field"><label>จำนวนฟิลเลย์ในรอบนี้</label>
       <div class="stepper"><button type="button" data-d="-1" aria-label="ลด">${ic('minus')}</button><b class="cnt"></b><button type="button" data-d="1" aria-label="เพิ่ม">${ic('plus')}</button><span class="mut">สูงสุด ${MAX_FILLET}</span></div></div>
-    <label>น้ำหนักฟิลเลย์ตามป้ายล็อต (kg)</label>
+    <label>น้ำหนักตาม${esc(N.lot)} (kg) <span class="tag">อ้างอิง ไม่ใช้คำนวณ</span></label>
     <div class="msw"></div>
     <div class="flist"></div>
-    <div class="field"><label>น้ำหนัก${esc(names[1])} ชั่งจริง (kg)</label><input class="iw" type="text" inputmode="decimal" placeholder="0.000"></div>
-    <div class="field"><label>น้ำหนัก${esc(names[2])} ชั่งจริง (kg)</label><input class="ia" type="text" inputmode="decimal" placeholder="0.000"></div>
+    <div class="field"><label>${esc(N.pre)} ชั่งจริง (kg)</label><input class="ip" type="text" inputmode="decimal" placeholder="0.000"></div>
+    <div class="field"><label>น้ำหนัก${esc(N.waste)} ชั่งจริง (kg)</label><input class="iw" type="text" inputmode="decimal" placeholder="0.000"></div>
+    <div class="field"><label>น้ำหนัก${esc(N.after)} ชั่งจริง (kg)</label><input class="ia" type="text" inputmode="decimal" placeholder="0.000"></div>
     <div class="res">
-      <div class="big"><span>Yield</span><b class="ry">-</b></div>
-      <div><span class="mut">รวมฟิลเลย์ (ป้าย)</span><b class="rt">-</b></div>
-      <div><span class="mut">${esc(names[1])}</span><b class="rw">-</b></div>
-      <div style="grid-column:1/-1"><span class="mut">Loss</span><b class="rl">-</b></div>
+      <div class="big"><span>Yield · ${esc(N.after)} ÷ ก่อนแล่</span><b class="ry">-</b></div>
+      <div><span class="mut">ก่อนแล่ (ชั่งจริง)</span><b class="rp">-</b></div>
+      <div><span class="mut">${esc(N.waste)}</span><b class="rw">-</b></div>
+      <div><span class="mut">Loss</span><b class="rl">-</b></div>
+      <div><span class="mut">ตามป้าย (อ้างอิง)</span><b class="rt">-</b></div>
     </div>
     <p class="warn"></p>`;
   const q = sel => root.querySelector(sel);
@@ -753,81 +795,88 @@ function WForm(root, names, onChange) {
   q('.stepper').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; st.n = Math.min(MAX_FILLET, Math.max(1, st.n + +b.dataset.d)); rows(); upd(); };
   q('.msw').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; st.mode = b.dataset.m; rows(); upd(); };
   q('.flist').oninput = e => { const t = e.target; if (t.dataset.t) st.total = t.value; else if (t.dataset.i != null) st.lab[+t.dataset.i] = t.value; upd(); };
+  q('.ip').oninput = e => { st.pre = e.target.value; upd(); };
   q('.iw').oninput = e => { st.waste = e.target.value; upd(); };
   q('.ia').oninput = e => { st.after = e.target.value; upd(); };
-  function get() { return calcW(st, names); }
+  function get() { return calcW(st, N); }
   function upd() {
     const v = get(), ok = v.before > 0;
     q('.ry').textContent = ok && v.after ? f2(v.yieldPct) + '%' : '-';
-    q('.rt').textContent = ok ? fmtKg(v.before) + ' kg' : '-';
+    q('.rp').textContent = ok ? fmtKg(v.before) + ' kg' : '-';
+    q('.rt').textContent = v.labelTotal > 0 ? fmtKg(v.labelTotal) + ' kg' : '-';
     q('.rw').textContent = ok && String(st.waste).trim() !== '' ? `${fmtKg(v.waste)} kg (${f2(v.wastePct)}%)` : '-';
     q('.rl').textContent = ok && v.after ? `${fmtKg(v.loss)} kg (${f2(v.lossPct)}%)` : '-';
     q('.warn').innerHTML = v.warn.map(esc).join('<br>');
     if (onChange) onChange(v);
   }
   rows();
+  const sv = x => x === 0 || x ? String(x) : '';
   return {
     get, refresh: upd,
-    state: () => ({ n: st.n, mode: st.mode, lab: st.lab.slice(0, st.n), total: st.total, waste: st.waste, after: st.after }),
+    state: () => ({ n: st.n, mode: st.mode, lab: st.lab.slice(0, st.n), total: st.total, pre: st.pre, waste: st.waste, after: st.after }),
     set(d) {
       st.n = Math.min(MAX_FILLET, Math.max(1, d.n || 1)); st.mode = d.mode === 'total' ? 'total' : 'each';
-      st.lab = (d.lab || []).map(x => x === 0 || x ? String(x) : ''); st.total = d.total === 0 || d.total ? String(d.total) : '';
+      st.lab = (d.lab || []).map(sv); st.total = sv(d.total); st.pre = d.pre ? String(d.pre) : '';
       st.waste = d.waste === '' || d.waste == null ? '' : String(d.waste); st.after = d.after ? String(d.after) : '';
-      q('.iw').value = st.waste; q('.ia').value = st.after; rows(); upd();
+      q('.ip').value = st.pre; q('.iw').value = st.waste; q('.ia').value = st.after; rows(); upd();
     }
   };
 }
-/** คำนวณจากค่าที่กรอก (ข้อความ) */
-function calcW(st, names) {
+/** คำนวณจากค่าที่กรอก: ใช้ น้ำหนักรวมก่อนแล่ / หนังเทา / เนื้อพร้อมใช้ ป้ายล็อตเก็บไว้อ้างอิงเท่านั้น */
+function calcW(st, N) {
   const each = st.mode !== 'total', lab = [];
   if (each) for (let i = 0; i < st.n; i++) lab.push(numIn(st.lab[i] || ''));
-  const before = each ? r3(lab.reduce((a, b) => a + b, 0)) : numIn(st.total);
-  const waste = numIn(st.waste), after = numIn(st.after), loss = r3(before - waste - after);
-  const complete = (each ? lab.every(v => v > 0) : before > 0) && String(st.waste).trim() !== '' && after > 0;
+  const labelTotal = each ? r3(lab.reduce((a, b) => a + b, 0)) : numIn(st.total);
+  const before = numIn(st.pre), waste = numIn(st.waste), after = numIn(st.after), loss = r3(before - waste - after);
+  const labOk = each ? lab.every(v => v > 0) : labelTotal > 0;
+  const complete = labOk && before > 0 && String(st.waste).trim() !== '' && after > 0;
   const odd = [];
   if (each) lab.forEach((v, i) => { if (v && (v > 5 || v < 0.1)) odd.push(`ฟิลเลย์ ${i + 1} = ${fmtKg(v)} kg`); });
-  else if (before && (before / st.n > 5 || before / st.n < 0.1)) odd.push(`ยอดรวม ${fmtKg(before)} kg (เฉลี่ย ${fmtKg(before / st.n)} kg ต่อฟิลเลย์)`);
-  if (waste > 10) odd.push(`${names[1]} = ${fmtKg(waste)} kg`);
-  if (after > 75) odd.push(`${names[2]} = ${fmtKg(after)} kg`);
+  else if (labelTotal && (labelTotal / st.n > 5 || labelTotal / st.n < 0.1)) odd.push(`ยอดรวมตามป้าย ${fmtKg(labelTotal)} kg (เฉลี่ย ${fmtKg(labelTotal / st.n)} kg ต่อฟิลเลย์)`);
+  if (before && (before / st.n > 5 || before / st.n < 0.1)) odd.push(`${N.pre} ${fmtKg(before)} kg (เฉลี่ย ${fmtKg(before / st.n)} kg ต่อฟิลเลย์)`);
+  if (waste > 10) odd.push(`${N.waste} = ${fmtKg(waste)} kg`);
+  if (after > 75) odd.push(`${N.after} = ${fmtKg(after)} kg`);
   const warn = [];
   if (odd.length) warn.push('ค่านี้ดูแปลก ใส่เป็นกรัมหรือนับฟิลเลย์ผิดหรือเปล่า: ' + odd.join(', '));
-  if (before > 0 && after > 0 && loss < -0.0005) warn.push(`${names[1]}รวมกับ${names[2]}หนักกว่าน้ำหนักฟิลเลย์ตามป้าย ลองเช็กอีกครั้ง`);
-  return { n: st.n, mode: each ? 'each' : 'total', lab, act: [], before, labelTotal: before, waste, after, loss, unit: 'kg', complete, odd, warn,
+  if (before > 0 && after > 0 && loss < -0.0005) warn.push(`${N.waste}รวมกับ${N.after}หนักกว่า${N.pre} ลองเช็กอีกครั้ง`);
+  if (before > 0 && labelTotal > 0 && Math.abs(before - labelTotal) / labelTotal > 0.1)
+    warn.push(`${N.pre} ${fmtKg(before)} kg ต่างจากป้าย ${fmtKg(labelTotal)} kg เกิน 10% ลองเช็กว่าชั่งครบทุกฟิลเลย์`);
+  return { n: st.n, mode: each ? 'each' : 'total', lab, act: [], before, labelTotal, waste, after, loss, unit: 'kg', complete, odd, warn,
     yieldPct: before ? after / before * 100 : 0, wastePct: before ? waste / before * 100 : 0, lossPct: before ? loss / before * 100 : 0 };
 }
 /** หน้าต่างกรอกน้ำหนักหลังถ่ายรูปแต่ละใบ */
 async function askWeight(idx) {
-  const names = S.steps.map(x => x.label), w = S.w;
-  if (idx >= 1 && !S.scaleOk) { await scaleCheck(); S.scaleOk = true; } // ชั่งจริงเริ่มที่หนังเทา
+  const st = S.steps[idx], role = st.role, w = S.w;
+  const key = { pre: 'pre', waste: 'waste', after: 'after' }[role];
+  if (role !== 'lot' && !S.scaleOk) { await scaleCheck(); S.scaleOk = true; } // ชั่งจริงเริ่มที่น้ำหนักรวมก่อนแล่
   return new Promise(res => {
     $('wtImg').src = S.photos[idx] ? S.photos[idx].stamped : '';
     const paint = () => {
-      if (idx === 0) {
-        $('wtTitle').textContent = `น้ำหนักตามป้ายล็อต (kg) • ${w.n} ฟิลเลย์`;
-        $('wtFields').innerHTML = modeSw(w.mode) + labRows(w, w.n);
+      if (role === 'lot') {
+        $('wtTitle').textContent = `น้ำหนักตาม${st.label} (kg) · ${w.n} ฟิลเลย์`;
+        $('wtFields').innerHTML = '<p class="mut" style="margin:0 0 12px">ใช้อ้างอิง ไม่นำไปคำนวณ Yield</p>' + modeSw(w.mode) + labRows(w, w.n);
       } else {
-        $('wtTitle').textContent = `น้ำหนัก${names[idx]} ชั่งจริง (kg)`;
-        $('wtFields').innerHTML = `<div class="field"><input class="wv" type="text" inputmode="decimal" placeholder="0.000" value="${esc((idx === 1 ? w.waste : w.after) || '')}"></div>`;
+        $('wtTitle').textContent = role === 'pre' ? `${st.label} (kg)` : `น้ำหนัก${st.label} ชั่งจริง (kg)`;
+        $('wtFields').innerHTML = (role === 'pre' ? `<p class="mut" style="margin:0 0 12px">ชั่งรวมทั้ง ${w.n} ฟิลเลย์ก่อนแล่ ค่านี้ใช้คำนวณ Yield</p>` : '') + `<div class="field"><input class="wv" type="text" inputmode="decimal" placeholder="0.000" value="${esc(w[key] || '')}"></div>`;
       }
     };
     const read = () => {
-      if (idx === 0) {
+      if (role === 'lot') {
         const t = $('wtFields').querySelector('[data-t]'); if (t) w.total = t.value;
         $('wtFields').querySelectorAll('[data-i]').forEach(el => w.lab[+el.dataset.i] = el.value);
-      } else if (idx === 1) w.waste = $('wtFields').querySelector('.wv').value;
-      else w.after = $('wtFields').querySelector('.wv').value;
+      } else w[key] = $('wtFields').querySelector('.wv').value;
     };
     const check = () => {
       read();
       let filled, odd = false;
-      if (idx === 0) {
+      if (role === 'lot') {
         const tot = w.mode === 'total', vals = tot ? [numIn(w.total)] : Array.from({ length: w.n }, (_, i) => numIn(w.lab[i] || ''));
         filled = vals.every(v => v > 0);
         odd = tot ? vals[0] > 0 && (vals[0] / w.n > 5 || vals[0] / w.n < 0.1) : vals.some(v => v && (v > 5 || v < 0.1));
       } else {
-        const raw = idx === 1 ? w.waste : w.after, v = numIn(raw);
-        filled = idx === 1 ? String(raw).trim() !== '' : v > 0;
-        odd = v > (idx === 1 ? 10 : 75);
+        const raw = w[key], v = numIn(raw);
+        filled = role === 'waste' ? String(raw).trim() !== '' : v > 0;
+        odd = role === 'pre' ? v > 0 && (v / w.n > 5 || v / w.n < 0.1) : v > (role === 'waste' ? 10 : 75);
       }
       $('wtWarn').textContent = odd ? 'ค่านี้ดูแปลก ใส่เป็นกรัมหรือเปล่า? แอปรับเป็น kg เช่น 1.515' : '';
       $('wtOk').disabled = !filled;
@@ -853,10 +902,26 @@ function scaleCheck() {
 }
 let collageTimer;
 async function goWeight() {
-  if (!S.form) S.form = WForm($('wForm'), S.steps.map(x => x.label), calc);
+  if (!S.form) S.form = WForm($('wForm'), namesOf(S.steps), calc);
   S.form.set(S.w);
+  autoDate(); paintDate();
   show('sW', capTitle(), cancelBtn(), capSub());
+  if (isBack() && !S.roundFor) refreshRound();
 }
+function paintDate() {
+  const el = $('inRecDate');
+  el.max = isoDay(new Date()); el.min = isoDay(new Date(Date.now() - (BACK_DAYS - 1) * 864e5)); el.value = S.recDate;
+  $('recDateNote').textContent = isBack() ? `บันทึกย้อนหลัง · เลขรอบนับของวันที่ ${thDate(S.recDate)}` : 'วันนี้';
+}
+async function refreshRound() {
+  const d = S.recDate; S.roundFor = d;
+  const r = await nextRound(S.branch, S.product, d);
+  if (S && S.recDate === d) { S.round = r; $('hTitle').textContent = capTitle(); calc(); }
+}
+$('inRecDate').onchange = () => {
+  if (!S) return;
+  S.recDate = clampDate($('inRecDate').value); S.dateManual = true; paintDate(); touchDraft(); refreshRound();
+};
 $('btnBackCap').onclick = () => { S.idx = 0; renderCap(); show('sCap', capTitle(), cancelBtn(), capSub()); };
 function calc(v) {
   if (!S || !S.form) return;
@@ -875,34 +940,45 @@ function drawCover(c, src, x, y, w, h) {
 }
 /** แถบข้อมูลด้านล่างคอลลาจ */
 function drawInfo(c, y0, W, INFO, d) {
-  const v = d.v, ok = v.before > 0 && v.after > 0, F = '-apple-system,"Noto Sans Thai",sans-serif';
-  c.fillStyle = '#1f6f5c'; c.fillRect(0, y0, W, INFO);
+  const v = d.v, N = d.names, ok = v.before > 0 && v.after > 0, F = '-apple-system,"Noto Sans Thai",sans-serif';
+  c.fillStyle = '#184B3F'; c.fillRect(0, y0, W, INFO);
   c.fillStyle = '#fff'; c.textBaseline = 'top'; c.textAlign = 'left';
-  c.font = `bold 38px ${F}`; c.fillText(`${d.product}  •  รอบที่ ${d.round}  •  ${v.n} ฟิลเลย์`, 30, y0 + 22, 790);
+  c.font = `bold 38px ${F}`; c.fillText(`${d.product}  •  รอบที่ ${d.round}  •  ${v.n} ฟิลเลย์`, 30, y0 + 22, 800);
   c.font = `25px ${F}`;
-  c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 790);
-  c.fillText(v.mode === 'total' ? `ฟิลเลย์ ${v.n} ชิ้น  •  ยอดรวมตามป้าย ${fmtKg(v.before)} kg` : `ฟิลเลย์ (ตามป้าย) ${v.lab.map(fmtKg).join(', ')} kg  =  ${fmtKg(v.before)} kg`, 30, y0 + 125, 790);
-  c.fillText(`${d.names[1]} ${fmtKg(v.waste)} kg  •  ${d.names[2]} ${fmtKg(v.after)} kg  •  Loss ${fmtKg(v.loss)} kg (${ok ? f2(v.lossPct) : '-'}%)`, 30, y0 + 170, 790);
+  c.fillText(`สาขา ${d.branch}  •  ${d.employee}  •  ${d.when}`, 30, y0 + 80, 800);
+  c.fillStyle = 'rgba(255,255,255,.75)';
+  c.fillText(v.mode === 'total' ? `${N.lot} (อ้างอิง) รวม ${fmtKg(v.labelTotal)} kg` : `${N.lot} (อ้างอิง) ${v.lab.map(fmtKg).join(', ')} = ${fmtKg(v.labelTotal)} kg`, 30, y0 + 125, 800);
+  c.fillStyle = '#fff';
+  c.fillText(`ก่อนแล่ ${fmtKg(v.before)} kg  •  ${N.waste} ${fmtKg(v.waste)} kg  •  ${N.after} ${fmtKg(v.after)} kg`, 30, y0 + 170, 800);
   c.textAlign = 'right';
-  c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 40);
-  c.font = `bold 80px ${F}`; c.fillStyle = '#ffd54a';
-  c.fillText(ok ? f2(v.yieldPct) + '%' : '-', W - 30, y0 + 75);
+  c.font = `24px ${F}`; c.fillText('YIELD', W - 30, y0 + 28);
+  c.font = `bold 80px ${F}`; c.fillStyle = '#FBD27A';
+  c.fillText(ok ? f2(v.yieldPct) + '%' : '-', W - 30, y0 + 60);
+  c.font = `24px ${F}`; c.fillStyle = '#fff';
+  c.fillText(`Loss ${fmtKg(v.loss)} kg (${ok ? f2(v.lossPct) : '-'}%)`, W - 30, y0 + 172);
   c.textAlign = 'left'; c.textBaseline = 'alphabetic';
 }
+/** ตำแหน่งรูปในคอลลาจ: 4 รูป = บน 1 ผืนผ้า + ล่าง 3 จัตุรัส / 3 รูป (แบบเดิม) = บน 1 + ล่าง 2 */
+const CL = { W: 1200, TOP: 675, GAP: 6, INFO: 230 };
+function layout(n) {
+  const { W, TOP, GAP, INFO } = CL, sq = n === 4 ? Math.floor((W - 2 * GAP) / 3) : 600;
+  const rects = [[0, 0, W, TOP]];
+  if (n === 4) for (let i = 0; i < 3; i++) rects.push([i * (sq + GAP), TOP + GAP, i === 2 ? W - 2 * (sq + GAP) : sq, sq]);
+  else rects.push([0, TOP + GAP, sq - GAP / 2, sq], [sq + GAP / 2, TOP + GAP, sq - GAP / 2, sq]);
+  return { rects, infoY: TOP + GAP + sq, H: TOP + GAP + sq + INFO };
+}
 function buildCollage() {
-  const W = 1200, TOP = 675, SQ = 600, GAP = 6, INFO = 230;
-  const H = TOP + GAP + SQ + INFO;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const L = layout(S.steps.length);
+  const cv = document.createElement('canvas'); cv.width = CL.W; cv.height = L.H;
   const c = cv.getContext('2d');
-  c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
-  const slots = [[0, 0, W, TOP], [0, TOP + GAP, SQ - GAP / 2, SQ], [SQ + GAP / 2, TOP + GAP, SQ - GAP / 2, SQ]];
-  slots.forEach(([x, y, w, h], i) => {
+  c.fillStyle = '#fff'; c.fillRect(0, 0, CL.W, L.H);
+  L.rects.forEach(([x, y, w, h], i) => {
     const p = S.photos[i];
     if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + srcNote(p.src)); }
     else { c.fillStyle = '#ddd'; c.fillRect(x, y, w, h); }
   });
-  drawInfo(c, TOP + GAP + SQ, W, INFO, { product: S.product, round: S.round, branch: S.branch, employee: S.employee,
-    when: fmtDT(new Date()), names: S.steps.map(x => x.label), v: S.form.get() });
+  drawInfo(c, L.infoY, CL.W, CL.INFO, { product: S.product, round: S.round, branch: S.branch, employee: S.employee,
+    when: isBack() ? `วันที่ ${thDate(S.recDate)} (บันทึกย้อนหลัง)` : fmtDT(new Date()), names: namesOf(S.steps), v: S.form.get() });
   return cv;
 }
 
@@ -917,10 +993,13 @@ $('btnSave').onclick = async () => {
   S.saving = true; $('btnSave').disabled = true;
   busy(true, 'กำลังบันทึก...');
   try {
-    S.round = await nextRound(S.branch, S.product); // ขอเลขรอบล่าสุดอีกครั้งก่อนบันทึก
+    S.recDate = clampDate(S.recDate);
+    S.round = await nextRound(S.branch, S.product, S.recDate); // ขอเลขรอบล่าสุดของวันนั้นอีกครั้งก่อนบันทึก
+    const tsAll = S.photos.filter(Boolean).map(p => +p.ts), first = tsAll.length ? new Date(Math.min(...tsAll)) : null;
     const body = {
       action: 'save', code: localStorage.getItem(LS.code), cid: S.cid,
       branch: S.branch, employee: S.employee, product: S.product, round: S.round, appVersion: APP_VERSION,
+      date: S.recDate, recAt: isBack() && first && isoDay(first) === S.recDate ? first.toISOString() : '',
       unit: 'kg', before: v.before, waste: v.waste, after: v.after,
       fillets: v.n, labelKg: v.lab, labelTotal: v.labelTotal,
       collage: (S.collageData = buildCollage().toDataURL('image/jpeg', 0.85)),
@@ -929,7 +1008,7 @@ $('btnSave').onclick = async () => {
     let res = await postJSON(body);
     if (res.dup) {
       busy(false);
-      if (!confirm(`ตัวเลขชุดนี้ตรงกับรอบที่ ${res.round || '?'} ที่บันทึกไปแล้ววันนี้\nน่าจะเป็นการบันทึกซ้ำ ต้องการบันทึกอีกครั้งหรือไม่?`)) return;
+      if (!confirm(`ตัวเลขชุดนี้ตรงกับรอบที่ ${res.round || '?'} ที่บันทึกไปแล้ว${isBack() ? 'ในวันที่ ' + thDate(S.recDate) : 'วันนี้'}\nน่าจะเป็นการบันทึกซ้ำ ต้องการบันทึกอีกครั้งหรือไม่?`)) return;
       busy(true, 'กำลังบันทึก...');
       body.force = true; res = await postJSON(body);
     }
@@ -937,10 +1016,10 @@ $('btnSave').onclick = async () => {
     if (!res.ok) { alert('บันทึกไม่สำเร็จ: ' + res.error); return; }
     if (res.round) S.round = res.round;
     S.lastId = res.id; S.done = true; clearDraft();
-    $('doneInfo').textContent = `${S.product} รอบที่ ${S.round} • ${v.n} ฟิลเลย์ • ${S.branch}`;
+    $('doneInfo').textContent = `${S.product} รอบที่ ${S.round} • ${v.n} ฟิลเลย์ • ${S.branch}` + (isBack() ? ` • ย้อนหลังวันที่ ${thDate(S.recDate)}` : '');
     $('btnPiece').innerHTML = ic('next') + `เริ่มรอบถัดไป · ${esc(S.product)}`;
     $('dYield').textContent = f2(res.yieldPct) + '%';
-    $('dWasteLbl').textContent = S.steps[1].label;
+    $('dWasteLbl').textContent = namesOf(S.steps).waste;
     $('dWaste').textContent = f2(res.wastePct) + '%';
     $('dLoss').textContent = `${fmtKg(v.loss)} kg (${f2(res.lossPct)}%)`;
     loadToday();
@@ -1036,7 +1115,7 @@ function renderSummary() {
       <div class="kpi">
         <div class="big"><span class="mut">Yield รวม</span><b>${f2(k.y)}%</b><span class="mut">ต่ำสุด ${f2(k.min)}% • สูงสุด ${f2(k.max)}%</span></div>
         <div><span class="mut">จำนวน</span><b>${k.n} รอบ</b><span class="mut">${k.nf} ฟิลเลย์</span></div>
-        <div><span class="mut">ฟิลเลย์ (ป้าย) → ${esc(nm[2])}</span><b style="font-size:17px">${fmtKg(k.sb)} → ${fmtKg(k.sa)} kg</b></div>
+        <div><span class="mut">ก่อนแล่ → ${esc(nm[2])}</span><b style="font-size:17px">${fmtKg(k.sb)} → ${fmtKg(k.sa)} kg</b></div>
         <div><span class="mut">${esc(nm[1])}</span><b>${f2(k.w)}%</b></div>
         <div><span class="mut">Loss</span><b class="${k.l > 5 ? 'bad' : ''}">${f2(k.l)}%</b></div>
       </div>
@@ -1058,7 +1137,7 @@ function summaryText() {
   byProduct(SUM.rows).forEach(([name, rows]) => {
     const k = calcSum(rows), { byBranch, groups } = groupRows(rows), nm = stepNames(name);
     t += `\n${prodIcon(name)} ${name}\n━━━━━━━━━━\n`;
-    t += `จำนวน ${k.n} รอบ (${k.nf} ฟิลเลย์)\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\n${nm[1]} ${f2(k.w)}% • Loss ${f2(k.l)}%\nฟิลเลย์ (ป้าย) ${fmtKg(k.sb)} kg → ${nm[2]} ${fmtKg(k.sa)} kg\n`;
+    t += `จำนวน ${k.n} รอบ (${k.nf} ฟิลเลย์)\nYield รวม ${f2(k.y)}% (ต่ำสุด ${f2(k.min)}% / สูงสุด ${f2(k.max)}%)\n${nm[1]} ${f2(k.w)}% • Loss ${f2(k.l)}%\nก่อนแล่ ${fmtKg(k.sb)} kg → ${nm[2]} ${fmtKg(k.sa)} kg\n`;
     if (groups.length > 1) { t += `${byBranch ? 'แยกสาขา' : 'แยกวัน'}:\n`; groups.forEach(([key, rs]) => { const c = calcSum(rs); t += `• ${byBranch ? key : thDate(key)}: ${c.n} รอบ (${c.nf} ฟิลเลย์) | Yield ${f2(c.y)}% | Loss ${f2(c.l)}%\n`; }); }
   });
   return t;
@@ -1131,8 +1210,6 @@ function summaryImage() {
 
 /* ---------- ประวัติ / แก้ไข ---------- */
 let E = null;
-const CL = { W: 1200, TOP: 675, SQ: 600, GAP: 6, INFO: 230 };
-const slotRects = () => [[0, 0, CL.W, CL.TOP], [0, CL.TOP + CL.GAP, CL.SQ - CL.GAP / 2, CL.SQ], [CL.SQ + CL.GAP / 2, CL.TOP + CL.GAP, CL.SQ - CL.GAP / 2, CL.SQ]];
 const backToHist = () => goHist();
 $('btnHist').onclick = () => goHist();
 $('histDays').onchange = () => loadHist();
@@ -1166,15 +1243,18 @@ async function openEdit(rec) {
     if (!res.ok) throw new Error(res.error);
     const base = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('เปิดรูปเดิมไม่ได้')); im.src = res.data; });
     const p = cfg.products.find(x => x.name === rec.product);
-    E.rec = rec; E.base = base; E.photos = [null, null, null];
-    E.labels = p ? p.steps : ['ป้ายล็อต', 'หนังเทา', 'เนื้อพร้อมใช้'];
+    // รูปเดิม 4 ช่อง (v2.4 ขึ้นไป) หรือ 3 ช่อง (แบบเก่า) ดูจากสัดส่วนรูป
+    E.n = base.height / base.width < 1.17 ? 4 : 3;
+    E.names = prodNames(rec.product);
+    E.labels = E.n === 4 ? [E.names.lot, E.names.pre, E.names.waste, E.names.after] : [E.names.lot, E.names.waste, E.names.after];
+    E.rec = rec; E.base = base; E.photos = E.labels.map(() => null);
     $('eName').value = rec.employee;
     $('editInfo').textContent = `${rec.product}${rec.round ? ' • รอบที่ ' + rec.round : ''} • ${thDate(rec.date)} ${rec.time}`;
     $('editPhotos').innerHTML = E.labels.map((l, i) => `<button class="btn sec" data-slot="${i}">${ic('camera')}${esc(l)}</button>`).join('');
-    E.form = WForm($('eForm'), E.labels, calcEdit);
+    E.form = WForm($('eForm'), E.names, calcEdit);
     const nf = rec.filletCount || 1, eachOk = rec.labelKg && rec.labelKg.length === nf;
-    E.form.set({ n: nf, mode: eachOk ? 'each' : 'total', lab: eachOk ? rec.labelKg : [], total: toKg(rec.before, rec.unit),
-      waste: toKg(rec.waste, rec.unit), after: toKg(rec.after, rec.unit) });
+    E.form.set({ n: nf, mode: eachOk ? 'each' : 'total', lab: eachOk ? rec.labelKg : [], total: rec.labelTotal || toKg(rec.before, rec.unit),
+      pre: toKg(rec.before, rec.unit), waste: toKg(rec.waste, rec.unit), after: toKg(rec.after, rec.unit) });
     busy(false);
     show('sEdit', 'แก้ไขรายการ', { text: '← กลับ', fn: backToHist });
     await scaleCheck();
@@ -1190,17 +1270,17 @@ function calcEdit(v) {
   editTimer = setTimeout(() => { $('editPrev').src = buildEditCollage().toDataURL('image/jpeg', 0.7); }, 250);
 }
 function buildEditCollage() {
-  const H = CL.TOP + CL.GAP + CL.SQ + CL.INFO;
+  const L = layout(E.n), H = L.H;
   const cv = document.createElement('canvas'); cv.width = CL.W; cv.height = H;
   const c = cv.getContext('2d');
   c.drawImage(E.base, 0, 0, CL.W, H);
-  slotRects().forEach(([x, y, w, h], i) => {
+  L.rects.forEach(([x, y, w, h], i) => {
     const p = E.photos[i];
     if (p) { drawCover(c, p.raw, x, y, w, h); drawStamp(c, x, y, w, h, p.label, fmtDT(p.ts) + srcNote(p.src)); }
   });
-  drawInfo(c, CL.TOP + CL.GAP + CL.SQ, CL.W, CL.INFO, { product: E.rec.product, round: E.rec.round || '-', branch: E.rec.branch,
+  drawInfo(c, L.infoY, CL.W, CL.INFO, { product: E.rec.product, round: E.rec.round || '-', branch: E.rec.branch,
     employee: $('eName').value.trim(), when: `${thDate(E.rec.date)} ${E.rec.time} (แก้ไข ${fmtDT(new Date()).slice(0, 16)})`,
-    names: E.labels, v: E.form.get() });
+    names: E.names, v: E.form.get() });
   return cv;
 }
 $('editPhotos').onclick = e => { const b = e.target.closest('[data-slot]'); if (!b) return; $('fEdit').dataset.slot = b.dataset.slot; $('fEdit').click(); };
@@ -1247,7 +1327,7 @@ async function saveDraft() {
   try {
     await IDB.put('draft', {
       v: 1, at: Date.now(), code: localStorage.getItem(LS.code), prod: S.prod, round: S.round, n: S.n, cid: S.cid,
-      employee: S.employee, branch: S.branch, steps: S.steps, idx: S.idx, scaleOk: S.scaleOk, w: S.w,
+      employee: S.employee, branch: S.branch, steps: S.steps, idx: S.idx, scaleOk: S.scaleOk, w: S.w, recDate: S.recDate, dateManual: !!S.dateManual,
       photos: S.steps.map((_, i) => { const p = S.photos[i]; return p ? { raw: p.rawData || (p.rawData = p.raw.toDataURL('image/jpeg', 0.85)), ts: +p.ts, src: p.src, label: p.label } : null; })
     });
   } catch (_) {}
@@ -1257,7 +1337,7 @@ async function checkDraft() {
   let d = null; try { d = await IDB.get('draft'); } catch (_) {}
   if (!d || d.code !== localStorage.getItem(LS.code)) { $('draftCard').style.display = 'none'; return; }
   const got = d.photos.filter(Boolean).length;
-  $('draftInfo').textContent = `${d.prod.name} รอบที่ ${d.round} • ${d.w.n} ฟิลเลย์ • สาขา ${d.branch} • ถ่ายแล้ว ${got}/${d.steps.length} รูป`;
+  $('draftInfo').textContent = `${d.prod.name} รอบที่ ${d.round} • ${d.w.n} ฟิลเลย์ • สาขา ${d.branch} • ถ่ายแล้ว ${got}/${d.steps.length === 3 ? 4 : d.steps.length} รูป`;
   $('draftCard').style.display = '';
   $('draftGo').onclick = () => resumeDraft(d);
   $('draftDel').onclick = () => { if (confirm('ทิ้งรอบที่ทำค้างไว้?')) { clearDraft(); $('draftCard').style.display = 'none'; } };
@@ -1270,8 +1350,13 @@ async function resumeDraft(d) {
       const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('รูปเสีย')); im.src = p.raw; });
       return makePhoto(img, p.label, new Date(p.ts), p.src, p.raw);
     }));
+    let steps = d.steps, idx = d.idx || 0;
+    if (steps.length === 3) { // รอบค้างจากเวอร์ชันก่อน 2.4: เพิ่มช่องน้ำหนักรวมก่อนแล่
+      steps = buildSteps(d.prod); photos.splice(1, 0, null); if (idx >= 1) idx++; d.w.pre = d.w.pre || '';
+    }
     S = { prod: d.prod, round: d.round, n: d.n, cid: d.cid, product: d.prod.name, employee: d.employee, branch: d.branch,
-      steps: d.steps, photos, idx: Math.min(d.idx || 0, d.steps.length - 1), scaleOk: d.scaleOk, form: null, w: d.w };
+      steps, photos, idx: Math.min(idx, steps.length - 1), scaleOk: d.scaleOk, form: null, w: d.w,
+      recDate: d.recDate || isoDay(new Date(d.at || Date.now())), dateManual: !!d.dateManual };
     busy(false);
     renderCap(); show('sCap', capTitle(), cancelBtn(), capSub());
     if (S.steps.every((_, i) => S.photos[i])) goWeight();
